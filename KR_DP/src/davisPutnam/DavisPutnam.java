@@ -129,6 +129,19 @@ public class DavisPutnam {
 		    return litchange;
 		   
 	}
+
+	public static ArrayList<String> extract_literals(ArrayList<ArrayList<String>> clauses) {
+		ArrayList<String> literals = new ArrayList<String>();
+		for (int i=0; i<clauses.size(); i++) { // loop over the clauses
+			for (int j=0; j<clauses.get(i).size(); j++) { // loop over the literals
+				if (!clauses.get(i).contains(clauses.get(i).get(j))) { // literal already in arraylist
+					literals.add(clauses.get(i).get(j));
+				}
+			}
+		}
+		return literals;
+	}
+
 	
 	public static int split(ArrayList<ArrayList<String>> clauses, Boolean[] literals, Boolean[] clausetrue) {
 		boolean cont = true;
