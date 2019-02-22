@@ -18,6 +18,7 @@ public class DavisPutnam {
 		}
 		return newList;
 	}
+
 	public static void pureLiteral(ArrayList<String> oneclauses, Boolean[] literals) {
 		for (int i = 0; i < oneclauses.size(); i ++) {
 	    	if (oneclauses.get(i).charAt(0) == '-') {
@@ -35,6 +36,7 @@ public class DavisPutnam {
 	    	}
 	    }
 	}
+
 	public static int unitLiteral(ArrayList<ArrayList<String>> clauses, Boolean[] literals) {
 		Random r = new Random();
 		for (int i = 0; i < clauses.size(); i ++) {
@@ -76,7 +78,6 @@ public class DavisPutnam {
 	    }
 		return 0;
 	}
-	
 	
 	public static void tautology(ArrayList<ArrayList<String>> clauses, Boolean[] clausetrue) {
 		for (int i = 0; i < clauses.size(); i ++) {
@@ -196,6 +197,7 @@ public class DavisPutnam {
 		}
 		return 0;
 	}
+
 	public static ArrayList<Integer> getnulls(Boolean[] clausetrue) {
 		ArrayList<Integer> nulls = new ArrayList<Integer>();
 		for (int i = 0; i < clausetrue.length; i ++) {
@@ -223,12 +225,14 @@ public class DavisPutnam {
 		return alltrue;
 		
 	}
+
 	public static void printLiterals(Boolean[] literals, ArrayList<String> clauses) {
 		for (int i = 0; i < clauses.size(); i ++) {
 			System.out.print(literals[1000 + Integer.parseInt(clauses.get(i)) - 1] + ". ");
 		}
 		System.out.println();
 	}
+
 	public static int whichToChange(Boolean[] clausetrue, Boolean[] literals, ArrayList<ArrayList<String>> clauses, ArrayList<Integer> litCheck) {
 		for (int j =0; j < litCheck.size(); j++) {
 			int lit = litCheck.get(j);
@@ -254,6 +258,7 @@ public class DavisPutnam {
 		}
 		return 0;
 	}
+
 	public static void countTruths(Boolean[] literals, Boolean[] clausetrue, ArrayList<ArrayList<String>> clauses) {
 		int countL = 0;
 		for (int i = 0; i < literals.length; i ++) {
@@ -272,6 +277,7 @@ public class DavisPutnam {
 		}
 		System.out.println(countC + " true clauses with " + countL + " true literals, and " + countF + " false clauses.");
 	}
+
 	public static void outputSudoku(Boolean[] literals) {
 		int count = 0;
 		for (int i = 0; i < literals.length; i ++) {
