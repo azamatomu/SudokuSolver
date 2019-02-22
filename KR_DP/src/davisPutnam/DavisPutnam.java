@@ -160,15 +160,21 @@ public class DavisPutnam {
 		return literal;
 	}
 	
-	public static int split(ArrayList<ArrayList<String>> clauses, Boolean[] literals, Boolean[] clausetrue) {
+	public static int split(ArrayList<ArrayList<String>> clauses, Boolean[] literals, Boolean[] clausetrue, Boolean use_heuristic) {
 		boolean cont = true;
 		while (cont) {
 			Random r = new Random();
 			ArrayList<Integer> nulls = getnulls(clausetrue);
-			if (nulls.size() != 0) { 
-				int ind1 = r.nextInt(nulls.size());
-				ind1 = nulls.get(ind1);
-				int ind2 = r.nextInt(clauses.get(ind1).size());
+			if (nulls.size() != 0) {
+				if (use_heuristic == true) {
+					// placeholder values
+					int ind1 = 1;
+					int ind2 = 2;
+				} else {
+					int ind1 = r.nextInt(nulls.size());
+					ind1 = nulls.get(ind1);
+					int ind2 = r.nextInt(clauses.get(ind1).size());
+				}
 				int result = r.nextInt(2);
 				if (literals[1000 + Integer.parseInt(clauses.get(ind1).get(ind2)) - 1] == null) {
 					if (result == 1) {
