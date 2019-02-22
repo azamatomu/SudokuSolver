@@ -142,6 +142,23 @@ public class DavisPutnam {
 		return literals;
 	}
 
+	public static String jeroslaw_wang(ArrayList<ArrayList<String>> clauses, ArrayList<String> literals) {
+		String literal = "";
+		double jw_score = 0.0;
+		for (int i=0; i<literals.size(); i++) { // loop over the literals
+			double current_jw_score = 0.0;
+			for (int j=0; j < clauses.size(); j++) { // loop over all clauses
+				if (clauses.get(j).contains(literals.get(i))) { // if clause contains literal
+					jw_score += Math.pow(2, -clauses.get(j).size());
+				}
+			}
+			if (current_jw_score > jw_score) { // if the jeroslaw-wang score is higher; update
+				jw_score = current_jw_score;
+				literal = literals.get(i);
+			}
+		}
+		return literal;
+	}
 	
 	public static int split(ArrayList<ArrayList<String>> clauses, Boolean[] literals, Boolean[] clausetrue) {
 		boolean cont = true;
