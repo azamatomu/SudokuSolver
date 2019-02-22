@@ -143,19 +143,21 @@ public class DavisPutnam {
 		return literals;
 	}
 
-	public static String jeroslaw_wang(ArrayList<ArrayList<String>> clauses, ArrayList<String> literals) {
+	public static String jeroslaw_wang(ArrayList<ArrayList<String>> clauses, ArrayList<String> unique_literals, Boolean[] literals) {
 		String literal = "";
 		double jw_score = 0.0;
-		for (int i=0; i<literals.size(); i++) { // loop over the literals
+		for (int i=0; i<unique_literals.size(); i++) { // loop over the literals
 			double current_jw_score = 0.0;
 			for (int j=0; j < clauses.size(); j++) { // loop over all clauses
-				if (clauses.get(j).contains(literals.get(i))) { // if clause contains literal
+				if (clauses.get(j).contains(unique_literals.get(i))) { // if clause contains literal
 					jw_score += Math.pow(2, -clauses.get(j).size());
 				}
 			}
 			if (current_jw_score > jw_score) { // if the jeroslaw-wang score is higher; update
-				jw_score = current_jw_score;
-				literal = literals.get(i);
+				if (literals[1000 + Integer.parseInt(unique_literals.get(i)) - 1] == null) { // if the literal is not assigned yet
+					jw_score = current_jw_score;
+					literal = unique_literals.get(i);
+				}
 			}
 		}
 		return literal;
@@ -168,27 +170,28 @@ public class DavisPutnam {
 			ArrayList<Integer> nulls = getnulls(clausetrue);
 			if (nulls.size() != 0) {
 				if (use_heuristic == true) {
-					// placeholder values
-					int ind1 = 1;
-					int ind2 = 2;
+					ArrayList<String> unique_literals = extract_literals(clauses);
+					String literal = jeroslaw_wang(clauses, unique_literals, literals);
+					int selected_literal = Integer.parseInt(literal);
 				} else {
 					int ind1 = r.nextInt(nulls.size());
 					ind1 = nulls.get(ind1);
 					int ind2 = r.nextInt(clauses.get(ind1).size());
+					int selected_literal = Integer.parseInt(clauses.get(ind1).get(ind2)) - 1;
 				}
 				int result = r.nextInt(2);
-				if (literals[1000 + Integer.parseInt(clauses.get(ind1).get(ind2)) - 1] == null) {
+				if (literals[1000 + selected_literal - 1] == null) {
 					if (result == 1) {
-						literals[1000 + Integer.parseInt(clauses.get(ind1).get(ind2)) - 1] = true;
-						literals[1000 - Integer.parseInt(clauses.get(ind1).get(ind2)) - 1] = false;
+						literals[1000 + selected_literal - 1] = true;
+						literals[1000 - selected_literal - 1] = false;
 					}
 					else {
-						literals[1000 + Integer.parseInt(clauses.get(ind1).get(ind2)) - 1] = false;
-						literals[1000 - Integer.parseInt(clauses.get(ind1).get(ind2)) - 1] = true;
+						literals[1000 + selected_literal - 1] = false;
+						literals[1000 - selected_literal - 1] = true;
 					}
 					//System.out.println("Split in " + clauses.get(ind1).get(ind2));
 					cont = false;
-					return Integer.parseInt(clauses.get(ind1).get(ind2));
+					return selected_literal;
 				}
 			} else {
 				cont = false;
