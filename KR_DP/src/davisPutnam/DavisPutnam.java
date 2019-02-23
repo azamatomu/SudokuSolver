@@ -250,7 +250,7 @@ public class DavisPutnam {
 				int selected_literal;
 				if (use_heuristic == true) {
 					ArrayList<String> unique_literals = extract_literals(clauses);
-					String literal = jeroslaw_wang(clauses, unique_literals, literals);
+					String literal = jeroslaw_wang(clauses, unique_literals, literals, false);
 					selected_literal = Integer.parseInt(literal);
 				} else {
 					int ind1 = r.nextInt(nulls.size());
