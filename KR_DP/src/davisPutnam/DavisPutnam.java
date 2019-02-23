@@ -7,6 +7,80 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.Vector;
+
+public class BiHashMap<K1, K2, V> {
+  // Taken from: https://stackoverflow.com/a/28362591/11075724
+	private final Map<K1, Map<K2, V>> mMap;
+	
+	public BiHashMap() {
+			mMap = new HashMap<K1, Map<K2, V>>();
+	}
+	
+	/**
+	 * Associates the specified value with the specified keys in this map (optional operation). If the map previously
+	 * contained a mapping for the key, the old value is replaced by the specified value.
+	 * 
+	 * @param key1
+	 *            the first key
+	 * @param key2
+	 *            the second key
+	 * @param value
+	 *            the value to be set
+	 * @return the value previously associated with (key1,key2), or <code>null</code> if none
+	 * @see Map#put(Object, Object)
+	 */
+	public V put(K1 key1, K2 key2, V value) {
+			Map<K2, V> map;
+			if (mMap.containsKey(key1)) {
+					map = mMap.get(key1);
+			} else {
+					map = new HashMap<K2, V>();
+					mMap.put(key1, map);
+			}
+	
+			return map.put(key2, value);
+	}
+	
+	/**
+	 * Returns the value to which the specified key is mapped, or <code>null</code> if this map contains no mapping for
+	 * the key.
+	 * 
+	 * @param key1
+	 *            the first key whose associated value is to be returned
+	 * @param key2
+	 *            the second key whose associated value is to be returned
+	 * @return the value to which the specified key is mapped, or <code>null</code> if this map contains no mapping for
+	 *         the key
+	 * @see Map#get(Object)
+	 */
+	public V get(K1 key1, K2 key2) {
+			if (mMap.containsKey(key1)) {
+					return mMap.get(key1).get(key2);
+			} else {
+					return null;
+			}
+	}
+	
+	/**
+	 * Returns <code>true</code> if this map contains a mapping for the specified key
+	 * 
+	 * @param key1
+	 *            the first key whose presence in this map is to be tested
+	 * @param key2
+	 *            the second key whose presence in this map is to be tested
+	 * @return Returns true if this map contains a mapping for the specified key
+	 * @see Map#containsKey(Object)
+	 */
+	public boolean containsKeys(K1 key1, K2 key2) {
+			return mMap.containsKey(key1) && mMap.get(key1).containsKey(key2);
+	}
+	
+	public void clear() {
+			mMap.clear();
+	}
+	
+	}
 
 public class DavisPutnam {
 	public static ArrayList<String> intoOneList(ArrayList<ArrayList<String>> bigList) {
@@ -148,7 +222,7 @@ public class DavisPutnam {
 		double jw_score = 0.0;
 		for (int i=0; i<unique_literals.size(); i++) { // loop over the literals
 			double current_jw_score = 0.0;
-			for (int j=0; j < clauses.size(); j++) { // loop over all clauses
+			for (int j=0; j<clauses.size(); j++) { // loop over all clauses
 				if (clauses.get(j).contains(unique_literals.get(i))) { // if clause contains literal
 					jw_score += Math.pow(2, -clauses.get(j).size());
 				}
@@ -160,6 +234,72 @@ public class DavisPutnam {
 				}
 			}
 		}
+		return literal;
+	}
+
+	public static String flip_literal(String literal) {
+		String flipped_literal = "";
+		if (literal.substring(0, 1).equals("-")) {
+			flipped_literal = literal.substring(1, literal.length());
+		} else {
+			flipped_literal = "-" + literal;
+		}
+		return flipped_literal;
+	}
+
+	public static String bohm(ArrayList<ArrayList<String>> clauses, ArrayList<String> unique_literals, Boolean[] literals) {
+		String literal = "";
+		double bohm_score = 0.0;
+		
+		int alpha = 1;
+		int beta = 2;
+
+		BiHashMap<Integer, String, Integer> clause_literal_dict = new BiHashMap<Integer, String, Integer>();
+
+		// create the clause_literal_dict
+		for (int i=0; i<clauses.size(); i++) { // loop over all clauses
+			for (int j=0; j<clauses.get(i).size(); j++) { // loop over the literals
+				if (clause_literal_dict.containsKeys(clauses.get(i).size(), clauses.get(i).get(j))) { // clause-literal combination already exists
+					clause_literal_dict.put(clauses.get(i).size(), clauses.get(i).get(j), clause_literal_dict.get(clauses.get(i).size(), clauses.get(i).get(j)) + 1)
+				} else { // clause-literal combination does not exist yet
+					clause_literal_dict.put(clauses.get(i).size(), clauses.get(i).get(j), 1)
+				}
+			}
+		}
+
+		// calculate the bohm score for all literals
+		for (int i=0; i<unique_literals.size(); i++) { // loop over all literals
+			String current_literal = unique_literals.get(i);
+			String flipped_literal = flip_literal(current_literal);
+			
+			Vector vector = new Vector();
+
+			Enumeration clauses_literal_dict_keys = clause_literal_dict.keys();
+
+			// populate the bohm vector
+			while (clauses_literal_dict_keys.hasMoreElements()) {
+				Integer current_clause_length = clauses_literal_dict_keys.nextElement();
+				double score = alpha * max(clause_literal_dict.get(current_clause_length, current_literal), clause_literal_dict.get(current_clause_length, flipped_literal));
+				score += beta * min(clause_literal_dict.get(current_clause_length, current_literal), clause_literal_dict.get(current_clause_length, flipped_literal));
+				vector.add(score);
+			}
+
+			double current_bohm_score = 0.0;
+			Iterator vector_itr = vector.iterator(); 
+			
+			// get the magnitude of the bohm vector
+			while (vector_itr.hasNext()) { 
+				current_bohm_score += Math.pow(vvector_itr.next(), 2);
+			}
+
+			if (current_bohm_score > bohm_score) { // if the bohm score is higher; update
+				if (literals[1000 + Integer.parseInt(current_literal) - 1] == null) { // if the literal is not assigned yet
+					bohm_score = current_bohm_score;
+					literal = current_literal;
+				}
+			}
+		}
+
 		return literal;
 	}
 	
