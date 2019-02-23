@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
-import java.util.Vector;
 
 public class DavisPutnam {
 	public static ArrayList<String> intoOneList(ArrayList<ArrayList<String>> bigList) {
@@ -182,14 +181,16 @@ public class DavisPutnam {
 		int beta = 2;
 
 		BiHashMap<Integer, String, Integer> clause_literal_dict = new BiHashMap<Integer, String, Integer>();
+		ArrayList<Integer> clause_lengths = new ArrayList<Integer>();
 
 		// create the clause_literal_dict
 		for (int i=0; i<clauses.size(); i++) { // loop over all clauses
 			for (int j=0; j<clauses.get(i).size(); j++) { // loop over the literals
 				if (clause_literal_dict.containsKeys(clauses.get(i).size(), clauses.get(i).get(j))) { // clause-literal combination already exists
-					clause_literal_dict.put(clauses.get(i).size(), clauses.get(i).get(j), clause_literal_dict.get(clauses.get(i).size(), clauses.get(i).get(j)) + 1)
+					clause_literal_dict.put(clauses.get(i).size(), clauses.get(i).get(j), clause_literal_dict.get(clauses.get(i).size(), clauses.get(i).get(j)) + 1);
 				} else { // clause-literal combination does not exist yet
-					clause_literal_dict.put(clauses.get(i).size(), clauses.get(i).get(j), 1)
+					clause_literal_dict.put(clauses.get(i).size(), clauses.get(i).get(j), 1);
+					clause_lengths.add(clauses.get(i).size());
 				}
 			}
 		}
@@ -199,24 +200,21 @@ public class DavisPutnam {
 			String current_literal = unique_literals.get(i);
 			String flipped_literal = flip_literal(current_literal);
 			
-			Vector vector = new Vector();
-
-			Enumeration clauses_literal_dict_keys = clause_literal_dict.keys();
+			ArrayList<Double> vector = new ArrayList<Double>();
 
 			// populate the bohm vector
-			while (clauses_literal_dict_keys.hasMoreElements()) {
-				Integer current_clause_length = clauses_literal_dict_keys.nextElement();
-				double score = alpha * max(clause_literal_dict.get(current_clause_length, current_literal), clause_literal_dict.get(current_clause_length, flipped_literal));
-				score += beta * min(clause_literal_dict.get(current_clause_length, current_literal), clause_literal_dict.get(current_clause_length, flipped_literal));
+			for (int j=0; j<clause_lengths.size(); j++) {
+				Integer current_clause_length = clause_lengths.get(j);
+				double score = alpha * Math.max(clause_literal_dict.get(current_clause_length, current_literal), clause_literal_dict.get(current_clause_length, flipped_literal));
+				score += beta * Math.min(clause_literal_dict.get(current_clause_length, current_literal), clause_literal_dict.get(current_clause_length, flipped_literal));
 				vector.add(score);
 			}
 
-			double current_bohm_score = 0.0;
-			Iterator vector_itr = vector.iterator(); 
-			
 			// get the magnitude of the bohm vector
-			while (vector_itr.hasNext()) { 
-				current_bohm_score += Math.pow(vvector_itr.next(), 2);
+			double current_bohm_score = 0.0;
+			
+			for (int k=0; k<vector.size(); k++) {
+				current_bohm_score += vector.get(k) * vector.get(k);
 			}
 
 			if (current_bohm_score > bohm_score) { // if the bohm score is higher; update
