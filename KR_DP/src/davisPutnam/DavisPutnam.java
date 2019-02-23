@@ -234,15 +234,16 @@ public class DavisPutnam {
 			Random r = new Random();
 			ArrayList<Integer> nulls = getnulls(clausetrue);
 			if (nulls.size() != 0) {
+				int selected_literal;
 				if (use_heuristic == true) {
 					ArrayList<String> unique_literals = extract_literals(clauses);
 					String literal = jeroslaw_wang(clauses, unique_literals, literals);
-					int selected_literal = Integer.parseInt(literal);
+					selected_literal = Integer.parseInt(literal);
 				} else {
 					int ind1 = r.nextInt(nulls.size());
 					ind1 = nulls.get(ind1);
 					int ind2 = r.nextInt(clauses.get(ind1).size());
-					int selected_literal = Integer.parseInt(clauses.get(ind1).get(ind2)) - 1;
+					selected_literal = Integer.parseInt(clauses.get(ind1).get(ind2)) - 1;
 				}
 				int result = r.nextInt(2);
 				if (literals[1000 + selected_literal - 1] == null) {
