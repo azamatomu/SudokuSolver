@@ -143,18 +143,31 @@ public class DavisPutnam {
 		return literals;
 	}
 
-	public static String jeroslaw_wang(ArrayList<ArrayList<String>> clauses, ArrayList<String> unique_literals, Boolean[] literals) {
+	public static String jeroslaw_wang(ArrayList<ArrayList<String>> clauses, ArrayList<String> unique_literals, Boolean[] literals, Boolean two_sided) {
 		String literal = "";
+		String current_literal;
+		String flipped_literal;
 		double jw_score = 0.0;
+		double current_jw_score;
+		
 		for (int i=0; i<unique_literals.size(); i++) { // loop over the literals
-			double current_jw_score = 0.0;
+			current_literal = unique_literals.get(i);
+			current_jw_score = 0;
+
 			for (int j=0; j<clauses.size(); j++) { // loop over all clauses
-				if (clauses.get(j).contains(unique_literals.get(i))) { // if clause contains literal
-					jw_score += Math.pow(2, -clauses.get(j).size());
+				if (clauses.get(j).contains(current_literal)) { // if clause contains literal
+					current_jw_score += Math.pow(2, -clauses.get(j).size());
+				}
+
+				if (two_sided) { // if 2-sided jeroslaw-wang
+					flipped_literal = flip_literal(current_literal);
+					if (clauses.get(j).contains(flipped_literal)) { // if clause contains literal
+						current_jw_score += Math.pow(2, -clauses.get(j).size());
+					}
 				}
 			}
 			if (current_jw_score > jw_score) { // if the jeroslaw-wang score is higher; update
-				if (literals[1000 + Integer.parseInt(unique_literals.get(i)) - 1] == null) { // if the literal is not assigned yet
+				if (literals[1000 + Integer.parseInt(current_literal) - 1] == null) { // if the literal is not assigned yet
 					jw_score = current_jw_score;
 					literal = unique_literals.get(i);
 				}
