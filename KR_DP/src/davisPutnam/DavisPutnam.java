@@ -240,6 +240,28 @@ public class DavisPutnam {
 
 		return literal;
 	}
+
+	public static String dlis(ArrayList<ArrayList<String>> clauses, ArrayList<String> unique_literals, Boolean[] literals) {
+		String literal;
+		String current_literal;
+		HashMap<String, Integer> literal_counts = new HashMap<String, Integer>();
+
+		for (int i=0; i<clauses.size(); i++) {
+			for (int j=0; j<clauses.get(i).size(); j++) {
+				current_literal = clauses.get(i).get(j);
+				if (literal_counts.containsKey(current_literal)) {
+					literal_counts.put(current_literal, literal_counts.get(current_literal) + 1);
+				} else {
+					literal_counts.put(current_literal, 1);
+				}
+			}
+		}
+
+		// get the key (literal) associated with the highest value (count)
+		literal = literal_counts.entrySet().stream().max((entry1, entry2) -> entry1.getValue() > entry2.getValue() ? 1 : -1).get().getKey();
+
+		return literal;
+	}
 	
 	public static int split(ArrayList<ArrayList<String>> clauses, Boolean[] literals, Boolean[] clausetrue, Boolean use_heuristic) {
 		boolean cont = true;
