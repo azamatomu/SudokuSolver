@@ -18,26 +18,27 @@ public class DavisPutnam {
 		}
 		return newList;
 	}
-
-	public static void pureLiteral(ArrayList<String> oneclauses, Boolean[] literals) {
+	public static void pureLiteral(ArrayList<String> oneclauses, Boolean[] literals, ArrayList<Integer> nflips) {
 		for (int i = 0; i < oneclauses.size(); i ++) {
 	    	if (oneclauses.get(i).charAt(0) == '-') {
 	    		if(!oneclauses.contains(oneclauses.get(i).substring(1))) {
-	    			literals[1000 + Integer.parseInt(oneclauses.get(i)) -1] = true;
-	    			literals[1000 - Integer.parseInt(oneclauses.get(i)) -1] = false;
+	    			flipLiteral(literals, Integer.parseInt(oneclauses.get(i)), true, false, nflips);
+	    			//literals[1000 + Integer.parseInt(oneclauses.get(i)) -1] = true;
+	    			//literals[1000 - Integer.parseInt(oneclauses.get(i)) -1] = false;
 	    			System.out.println("Pure negative literal at " + oneclauses.get(i));
 	    		}
 	    	} else {
 	    		if(!oneclauses.contains('-' + oneclauses.get(i))) {
-	    			literals[1000 + Integer.parseInt(oneclauses.get(i)) -1] = true;
-	    			literals[1000 - Integer.parseInt(oneclauses.get(i)) -1] = false;
+	    			flipLiteral(literals, Integer.parseInt(oneclauses.get(i)), true, false, nflips);
+	    			//literals[1000 + Integer.parseInt(oneclauses.get(i)) -1] = true;
+	    			//flipLiteral(literals, Integer.parseInt(oneclauses.get(i)), true, false);
+	    			//literals[1000 - Integer.parseInt(oneclauses.get(i)) -1] = false;
 	    			System.out.println("Pure positive literal at " + oneclauses.get(i));
 	    		}
 	    	}
 	    }
 	}
-
-	public static int unitLiteral(ArrayList<ArrayList<String>> clauses, Boolean[] literals) {
+	public static int unitLiteral(ArrayList<ArrayList<String>> clauses, Boolean[] literals, ArrayList<Integer> nflips) {
 		Random r = new Random();
 		for (int i = 0; i < clauses.size(); i ++) {
 			int satcount = 0;
@@ -61,8 +62,9 @@ public class DavisPutnam {
 			}
 			if (nullcount == 1 && (clauses.get(i).size() - unsatcount == nullcount)) {
 				for (int j = 0; j < ii.size(); j ++) {
-					literals[1000 + ii.get(j) - 1] = true;
-					literals[1000 - ii.get(j) - 1] = false;
+					flipLiteral(literals, ii.get(j), true, false, nflips);
+					//literals[1000 + ii.get(j) - 1] = true;
+					//literals[1000 - ii.get(j) - 1] = false;
 					return ii.get(j);
 				} 
 			}
@@ -78,6 +80,7 @@ public class DavisPutnam {
 	    }
 		return 0;
 	}
+	
 	
 	public static void tautology(ArrayList<ArrayList<String>> clauses, Boolean[] clausetrue) {
 		for (int i = 0; i < clauses.size(); i ++) {
@@ -120,17 +123,17 @@ public class DavisPutnam {
 		return anychanges;
 	}
 	
-	public static int simplify(ArrayList<ArrayList<String>> clauses, Boolean[] literals, Boolean[] clausetrue) {
+	public static int simplify(ArrayList<ArrayList<String>> clauses, Boolean[] literals, Boolean[] clausetrue, ArrayList<Integer> nflips) {
 		boolean anychanges = true;
 		    anychanges = false;
 		    ArrayList<String> oneclauses = intoOneList(clauses);
-		    //pureLiteral(oneclauses, literals);
-		    int litchange = unitLiteral(clauses, literals);
+		    //pureLiteral(oneclauses, literals, nflips);
+		    int litchange = unitLiteral(clauses, literals, nflips);
 		    anychanges = doTrue(clauses, literals, clausetrue);
 		    return litchange;
 		   
 	}
-
+	
 	public static ArrayList<String> extract_literals(ArrayList<ArrayList<String>> clauses) {
 		ArrayList<String> literals = new ArrayList<String>();
 		for (int i=0; i<clauses.size(); i++) { // loop over the clauses
@@ -263,7 +266,7 @@ public class DavisPutnam {
 		return literal;
 	}
 	
-	public static int split(ArrayList<ArrayList<String>> clauses, Boolean[] literals, Boolean[] clausetrue, Boolean use_heuristic) {
+	public static int split(ArrayList<ArrayList<String>> clauses, Boolean[] literals, Boolean[] clausetrue, ArrayList<Integer> nflips, Boolean use_heuristic) {
 		boolean cont = true;
 		while (cont) {
 			Random r = new Random();
@@ -278,17 +281,20 @@ public class DavisPutnam {
 					int ind1 = r.nextInt(nulls.size());
 					ind1 = nulls.get(ind1);
 					int ind2 = r.nextInt(clauses.get(ind1).size());
-					selected_literal = Integer.parseInt(clauses.get(ind1).get(ind2)) - 1;
+					selected_literal = Integer.parseInt(clauses.get(ind1).get(ind2));
 				}
 				int result = r.nextInt(2);
+				//System.out.println(selected_literal);
 				if (literals[1000 + selected_literal - 1] == null) {
 					if (result == 1) {
-						literals[1000 + selected_literal - 1] = true;
-						literals[1000 - selected_literal - 1] = false;
+						flipLiteral(literals, selected_literal, true, false, nflips);
+						//literals[1000 + selected_literal - 1] = true;
+						//literals[1000 - selected_literal - 1] = false;
 					}
 					else {
-						literals[1000 + selected_literal - 1] = false;
-						literals[1000 - selected_literal - 1] = true;
+						flipLiteral(literals, selected_literal, true, false, nflips);
+						//literals[1000 + selected_literal - 1] = false;
+						//literals[1000 - selected_literal - 1] = true;
 					}
 					//System.out.println("Split in " + clauses.get(ind1).get(ind2));
 					cont = false;
@@ -301,7 +307,6 @@ public class DavisPutnam {
 		}
 		return 0;
 	}
-
 	public static ArrayList<Integer> getnulls(Boolean[] clausetrue) {
 		ArrayList<Integer> nulls = new ArrayList<Integer>();
 		for (int i = 0; i < clausetrue.length; i ++) {
@@ -329,40 +334,12 @@ public class DavisPutnam {
 		return alltrue;
 		
 	}
-
 	public static void printLiterals(Boolean[] literals, ArrayList<String> clauses) {
 		for (int i = 0; i < clauses.size(); i ++) {
 			System.out.print(literals[1000 + Integer.parseInt(clauses.get(i)) - 1] + ". ");
 		}
 		System.out.println();
 	}
-
-	public static int whichToChange(Boolean[] clausetrue, Boolean[] literals, ArrayList<ArrayList<String>> clauses, ArrayList<Integer> litCheck) {
-		for (int j =0; j < litCheck.size(); j++) {
-			int lit = litCheck.get(j);
-			int count = 0;
-			boolean temp = literals[1000 + lit - 1];
-			boolean temp2 = literals[1000 - lit - 1];
-			literals[1000 + lit - 1] = temp2;
-			literals[1000 - lit - 1] = temp;
-			doTrue(clauses, literals, clausetrue);
-			for (int i = 0; i < clausetrue.length; i ++) {
-				if (clausetrue[i] != null) {
-					if (!clausetrue[i]) {
-						count += 1;
-					}
-				}
-			}
-			if (count == 0) {
-				return lit;
-			}
-			literals[1000 + lit - 1] = temp;
-			literals[1000 - lit - 1] = temp2;
-			doTrue(clauses, literals, clausetrue);
-		}
-		return 0;
-	}
-
 	public static void countTruths(Boolean[] literals, Boolean[] clausetrue, ArrayList<ArrayList<String>> clauses) {
 		int countL = 0;
 		for (int i = 0; i < literals.length; i ++) {
@@ -381,7 +358,6 @@ public class DavisPutnam {
 		}
 		System.out.println(countC + " true clauses with " + countL + " true literals, and " + countF + " false clauses.");
 	}
-
 	public static void outputSudoku(Boolean[] literals) {
 		int count = 0;
 		for (int i = 0; i < literals.length; i ++) {
@@ -395,95 +371,67 @@ public class DavisPutnam {
 			}
 		}	
 	}
-	// 1. Simplify
-	// Tautology (only checked once)
-	// If clause has 'P or P then it can be removed
-	// Pure Literal
-	// If literal occurs only pos or neg, it can be set true or false respectively
-	// Unit Clause
-	// If clause consists of one clause, it has to be set to true
-	
-	// 2. Split
-	// Pick one predicate and set it to true
-	// Simplify again
-	
-	// 3. Repeat 1 and 2 until convergence or until inconsistence (false clause)
-	
-	// 4. Backtrack
-	// For literal from 2 pick another value, try again
-	
-	public static void main(String[] args) throws FileNotFoundException {
-		// TODO Auto-generated method stub
-		// pass the path to the file as a parameter 
-	    File file = 
-	      new File("sudoku-rules.txt"); 
-	    Scanner sc = new Scanner(file); 
-	    String nextclause = sc.nextLine();
-	    String[] after = nextclause.split("\\s+");
-	    int maxvar;
-	    int nclauses;
-	    if (after[0].charAt(0) == 'p') {
-    		maxvar = Integer.parseInt(after[2]);
-    		nclauses = Integer.parseInt(after[3]);
-    	}
-	    else {
-	    	System.out.println("No starting line found.");
-	    	throw new FileNotFoundException();
-	    }
-	    File file2 = 
-	  	      new File("sudoku-example.txt"); 
-	    Scanner sc2 = new Scanner(file2);
-	    ArrayList<ArrayList<String>> clauses = new ArrayList<ArrayList<String>>();
-	    int clausen = 0; 
-	    Boolean[] literals = new Boolean[2*maxvar + 1];
-	    Arrays.fill(literals, null); 
-	    while (sc.hasNextLine()) {
+	public static void readSudoku(Scanner rules, Scanner problem, ArrayList<ArrayList<String>> clauses, String nextclause, String[] after) {
+		while (rules.hasNextLine()) {
 	    	int j = 0;
-	    	nextclause = sc.nextLine();
+	    	nextclause = rules.nextLine();
 	    	ArrayList<String> singleList = new ArrayList<String>();
 	    	after = nextclause.split("\\s+");
 	    	while (!after[j].equals("0")) {
 	    		singleList.add(after[j]);
-	    		literals[1000 + Integer.parseInt(after[j]) -1] = null;
 	    		j += 1;
 	    	}
 	    	clauses.add(singleList);
-	    	clausen += 1;
 	    }
-	    while (sc2.hasNextLine()) {
+	    outer: while (problem.hasNextLine()) {
 	    	int j = 0;
-	    	nextclause = sc2.nextLine();
+	    	nextclause = problem.nextLine();
+	    	if (nextclause.charAt(0)=='=') {
+	    		break outer;
+	    	}
 	    	ArrayList<String> singleList = new ArrayList<String>();
 	    	after = nextclause.split("\\s+");
 	    	while (!after[j].equals("0")) {
 	    		singleList.add(after[j]);
-	    		literals[1000 + Integer.parseInt(after[j]) -1] = null;
 	    		j += 1;
 	    	}
 	    	clauses.add(singleList);
-	    	clausen += 1;
+	    	
 	    }  
-	    sc.close();
-	    sc2.close();
-
-	    Boolean[] clausetrue= new Boolean[clauses.size()];
-	    Arrays.fill(clausetrue, null);
-	    System.out.println("There are " + clauses.size() + " clauses.");
-	    String[] cont = new String[2]; 
-	    cont[0] = "n";
+	}
+	public static void flipLiteral(Boolean[] literals, int tochange, Boolean firsttrue, Boolean nullify, ArrayList<Integer> nflips) {
+		nflips.set(nflips.size()-1, nflips.get(nflips.size()-1) + 2);
+		if (!nullify) {
+			if (firsttrue) {
+				literals[1000 + tochange - 1] = true;
+				literals[1000 - tochange - 1] = false;
+			} else {
+				literals[1000 + tochange - 1] = false;
+				literals[1000 - tochange - 1] = true;
+			}
+		} else {
+			literals[1000 + tochange - 1] = null;
+			literals[1000 - tochange - 1] = null;
+		}
+		
+	}
+	
+	public static void solveSudoku(ArrayList<ArrayList<String>> clauses, Boolean[] literals, Boolean[] clausetrue, ArrayList<Integer> nflips) {
+		nflips.add(0);
+		String[] cont = new String[2];
+		cont[0] = "n";
 	    int ncount = 0;
-	    Random r = new Random(); 
 	    boolean anychanges;
-	    ArrayList<ArrayList<Integer>> flipt = new ArrayList<ArrayList<Integer>>();
-	    ArrayList<Integer> flipped = new ArrayList<Integer>();
-	    ArrayList<Integer> splitd = new ArrayList<Integer>();
-	    ArrayList<Integer> backtracksplitd= new ArrayList<Integer>();
-	    int splitted = 0;
+	    ArrayList<ArrayList<Integer>> flipt = new ArrayList<ArrayList<Integer>>(); //List with all values flipped per split
+	    ArrayList<Integer> flipped = new ArrayList<Integer>(); //Temp list with flipped literal
+	    ArrayList<Integer> splitd = new ArrayList<Integer>(); //List with all splitted literal
+	    ArrayList<Integer> backtracksplitd= new ArrayList<Integer>(); //Splitted values that were used in backtracking
+	    int splitted = 0; //Temp value with splitted literal
 	    while (cont[0] != "t") {
 	    	int litchange = 0;
-	    	litchange = simplify(clauses, literals, clausetrue); 
+	    	litchange = simplify(clauses, literals, clausetrue, nflips);  
 	    	if (litchange==0) {
-	    		splitted = split(clauses,literals, clausetrue);
+	    		splitted = split(clauses,literals, clausetrue, nflips, false);
 	    		splitd.add(splitted);
 	    		if (splitted !=0) {
 	    			//System.out.println("Split " + splitted);
@@ -514,11 +462,13 @@ public class DavisPutnam {
 		    	}
     			for (int j = splitd.size() - 1; j >= 0; j--) {
     				for (int i = 0; i < flipt.get(j).size(); i++) {
-    					literals[1000 + flipt.get(j).get(i) - 1] = null;
-    	    			literals[1000 - flipt.get(j).get(i) - 1] = null;
+    					flipLiteral(literals, flipt.get(j).get(i), false, true, nflips);
+    					//literals[1000 + flipt.get(j).get(i) - 1] = null;
+    	    			//literals[1000 - flipt.get(j).get(i) - 1] = null;
     	    		}
-    				literals[1000 + splitd.get(j) - 1] = null;
-    				literals[1000 - splitd.get(j) - 1] = null;
+    				flipLiteral(literals, splitd.get(j), false, true, nflips);
+    				//literals[1000 + splitd.get(j) - 1] = null;
+    				//literals[1000 - splitd.get(j) - 1] = null;
     				//System.out.println(splitd.get(j));
     				if (!backtracksplitd.contains(splitd.get(j))) {
     					doTrue(clauses, literals, clausetrue);
@@ -533,7 +483,7 @@ public class DavisPutnam {
     			}
 	    	}
 	    	if (ncount % 100  == 0) {
-	    		System.out.println(ncount);
+	    		//System.out.println(ncount);
 	    	}
 	    	ncount += 1;
 	    }
@@ -542,16 +492,68 @@ public class DavisPutnam {
 	    for (int i = 0; i < literals.length; i ++) {
 	    	if (literals[i] != null) {
 	    		if (literals[i] == true) {
-	    			System.out.println(i - 1000 + 1);
+	    			//System.out.println(i - 1000 + 1);
 	    			count += 1;
-	    			
 	    		}
 	    	}	
 	    }
-	    System.out.println("SAT with " + count);
+	    //System.out.println("SAT with " + count);
 	    outputSudoku(literals);
-	    
-
+	}
+	// 1. Simplify
+	// Tautology (only checked once)
+	// If clause has 'P or P then it can be removed
+	// Pure Literal
+	// If literal occurs only pos or neg, it can be set true or false respectively
+	// Unit Clause
+	// If clause consists of one clause, it has to be set to true
+	
+	// 2. Split
+	// Pick one predicate and set it to true
+	// Simplify again
+	
+	// 3. Repeat 1 and 2 until convergence or until inconsistence (false clause)
+	
+	// 4. Backtrack
+	// For literal from 2 pick another value, try again
+	
+	public static void main(String[] args) throws FileNotFoundException {
+		// TODO Auto-generated method stub
+		// pass the path to the file as a parameter 
+		File file2 = new File("newsudoku.txt"); // always open
+	    Scanner sc2 = new Scanner(file2);
+	    boolean moreproblems = true;
+	    int nsudoku = 0;
+	    while (moreproblems) {
+		    //Reading the sudoku rules file (Scanner 1) and sudoku problem file (Scanner 2) 
+			File file = new File("sudoku-rules.txt"); 
+		    Scanner sc = new Scanner(file);  //open once
+		    String nextclause = sc.nextLine();
+		    String[] after = nextclause.split("\\s+");
+		    int maxvar;
+		    if (after[0].charAt(0) == 'p') {
+	    		maxvar = Integer.parseInt(after[2]);
+	    	} else {
+		    	System.out.println("No starting line found.");
+		    	throw new FileNotFoundException();
+		    }
+		    ArrayList<ArrayList<String>> clauses = new ArrayList<ArrayList<String>>(); //List containing all the clauses with the literals
+		    Boolean[] literals = new Boolean[2*maxvar + 1];  //List containing boolean values of literals
+		    Arrays.fill(literals, null);
+		    readSudoku(sc,sc2,clauses,nextclause,after);
+		    if (!sc2.hasNextLine()) {
+		    	moreproblems = false;
+		    }
+		    sc.close();
+		    //List containing boolean values of clauses
+		    Boolean[] clausetrue= new Boolean[clauses.size()]; 
+		    Arrays.fill(clausetrue, null);
+		    nsudoku++;
+		    ArrayList<Integer> nflips = new ArrayList<Integer>();
+		    solveSudoku(clauses, literals, clausetrue, nflips);
+		    System.out.println(nflips.get(nflips.size()-1));
+	    }
+	    System.out.println("You have " + nsudoku + " sudokus.");
 	}
 
 }
