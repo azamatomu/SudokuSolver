@@ -241,8 +241,23 @@ public class DavisPutnam {
 			// populate the bohm vector
 			for (int j=0; j<clause_lengths.size(); j++) {
 				Integer current_clause_length = clause_lengths.get(j);
-				double score = alpha * Math.max(clause_literal_dict.get(current_clause_length, current_literal), clause_literal_dict.get(current_clause_length, flipped_literal));
-				score += beta * Math.min(clause_literal_dict.get(current_clause_length, current_literal), clause_literal_dict.get(current_clause_length, flipped_literal));
+				Integer h_i;
+				Integer flipped_h_i;
+				
+				if (clause_literal_dict.get(current_clause_length, current_literal) != null) {
+					h_i = clause_literal_dict.get(current_clause_length, current_literal);
+				} else {
+					h_i = 0;
+				}
+				
+				if (clause_literal_dict.get(current_clause_length, flipped_literal) != null) {
+					flipped_h_i = clause_literal_dict.get(current_clause_length, flipped_literal);
+				} else {
+					flipped_h_i = 0;
+				}
+				
+				double score = alpha * Math.max(h_i, flipped_h_i);
+				score += beta * Math.min(h_i, flipped_h_i);
 				vector.add(score);
 			}
 
@@ -671,7 +686,7 @@ public class DavisPutnam {
 	    	int litchange = 0;
 	    	litchange = simplify(clauses, literals, clausetrue, nflips);  
 	    	if (litchange==0) {
-	    		splitted = split(clauses,literals, clausetrue, nflips, unique_literals, 3);
+	    		splitted = split(clauses,literals, clausetrue, nflips, unique_literals, 4);
 	    		splitd.add(splitted);
 	    		if (splitted !=0) {
 	    			//System.out.println("Split " + splitted);
