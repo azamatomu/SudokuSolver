@@ -279,6 +279,10 @@ public class DavisPutnam {
 		// get the key (literal) associated with the highest value (count)
 		literal = literal_counts.entrySet().stream().max((entry1, entry2) -> entry1.getValue() > entry2.getValue() ? 1 : -1).get().getKey();
 
+		while (literals[1000 + Integer.parseInt(literal) - 1] != null) { // make sure the selected literal hasn't been assigned yet
+			literal_counts.remove(literal);
+			literal = literal_counts.entrySet().stream().max((entry1, entry2) -> entry1.getValue() > entry2.getValue() ? 1 : -1).get().getKey();
+		}
 		return Integer.parseInt(literal);
 	}
 	
