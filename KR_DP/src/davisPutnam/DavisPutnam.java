@@ -146,16 +146,20 @@ public class DavisPutnam {
 		return literals;
 	}
 
-	public static String jeroslaw_wang(ArrayList<ArrayList<String>> clauses, ArrayList<String> unique_literals, Boolean[] literals, Boolean two_sided) {
+	public static ArrayList<Integer> jeroslaw_wang(ArrayList<ArrayList<String>> clauses, ArrayList<String> unique_literals, Boolean[] literals, Boolean two_sided) {
+		ArrayList<Integer> literal_value = new ArrayList<Integer>();
 		String literal = "";
 		String current_literal;
 		String flipped_literal;
 		double jw_score = 0.0;
+		double flipped_jw_score = 0.0;
 		double current_jw_score;
+		double current_flipped_jw_score;
 		
 		for (int i=0; i<unique_literals.size(); i++) { // loop over the literals
 			current_literal = unique_literals.get(i);
-			current_jw_score = 0;
+			current_jw_score = 0.0;
+			current_flipped_jw_score = 0.0;
 
 			for (int j=0; j<clauses.size(); j++) { // loop over all clauses
 				if (clauses.get(j).contains(current_literal)) { // if clause contains literal
@@ -165,18 +169,30 @@ public class DavisPutnam {
 				if (two_sided) { // if 2-sided jeroslaw-wang
 					flipped_literal = flip_literal(current_literal);
 					if (clauses.get(j).contains(flipped_literal)) { // if clause contains literal
-						current_jw_score += Math.pow(2, -clauses.get(j).size());
+						current_flipped_jw_score += Math.pow(2, -clauses.get(j).size());
 					}
 				}
 			}
-			if (current_jw_score > jw_score) { // if the jeroslaw-wang score is higher; update
+			if (current_jw_score + current_flipped_jw_score > jw_score + flipped_jw_score) { // if the jeroslaw-wang score is higher; update
 				if (literals[1000 + Integer.parseInt(current_literal) - 1] == null) { // if the literal is not assigned yet
 					jw_score = current_jw_score;
+					flipped_jw_score = current_flipped_jw_score;
 					literal = unique_literals.get(i);
 				}
 			}
 		}
-		return literal;
+		
+		literal_value.add(Integer.parseInt(literal));
+
+		if (two_sided) {
+			if (jw_score >= flipped_jw_score) {
+				literal_value.add(1);
+			} else {
+				literal_value.add(0);
+			}
+		}
+
+		return literal_value;
 	}
 
 	public static String flip_literal(String literal) {
@@ -189,7 +205,7 @@ public class DavisPutnam {
 		return flipped_literal;
 	}
 
-	public static String bohm(ArrayList<ArrayList<String>> clauses, ArrayList<String> unique_literals, Boolean[] literals) {
+	public static Integer bohm(ArrayList<ArrayList<String>> clauses, ArrayList<String> unique_literals, Boolean[] literals) {
 		String literal = "";
 		double bohm_score = 0.0;
 		
@@ -241,10 +257,10 @@ public class DavisPutnam {
 			}
 		}
 
-		return literal;
+		return Integer.parseInt(literal);
 	}
 
-	public static String dlis(ArrayList<ArrayList<String>> clauses, ArrayList<String> unique_literals, Boolean[] literals) {
+	public static Integer dlis(ArrayList<ArrayList<String>> clauses, ArrayList<String> unique_literals, Boolean[] literals) {
 		String literal;
 		String current_literal;
 		HashMap<String, Integer> literal_counts = new HashMap<String, Integer>();
@@ -263,27 +279,43 @@ public class DavisPutnam {
 		// get the key (literal) associated with the highest value (count)
 		literal = literal_counts.entrySet().stream().max((entry1, entry2) -> entry1.getValue() > entry2.getValue() ? 1 : -1).get().getKey();
 
-		return literal;
+		return Integer.parseInt(literal);
 	}
 	
-	public static int split(ArrayList<ArrayList<String>> clauses, Boolean[] literals, Boolean[] clausetrue, ArrayList<Integer> nflips, Boolean use_heuristic) {
+	public static int split(ArrayList<ArrayList<String>> clauses, Boolean[] literals, Boolean[] clausetrue, ArrayList<Integer> nflips, ArrayList<String> unique_literals, Integer use_heuristic) {
 		boolean cont = true;
 		while (cont) {
 			Random r = new Random();
 			ArrayList<Integer> nulls = getnulls(clausetrue);
 			if (nulls.size() != 0) {
 				int selected_literal;
-				if (use_heuristic == true) {
-					ArrayList<String> unique_literals = extract_literals(clauses);
-					String literal = jeroslaw_wang(clauses, unique_literals, literals, false);
-					selected_literal = Integer.parseInt(literal);
-				} else {
+				ArrayList<Integer> literal_value;
+				int result;
+
+				switch (use_heuristic) {
+					case 0: // no heuristic
 					int ind1 = r.nextInt(nulls.size());
 					ind1 = nulls.get(ind1);
 					int ind2 = r.nextInt(clauses.get(ind1).size());
 					selected_literal = Integer.parseInt(clauses.get(ind1).get(ind2));
+					result = r.nextInt(2);
+					case 1: // jeroslaw-wang one-sided
+					literal_value = jeroslaw_wang(clauses, unique_literals, literals, false);
+					selected_literal = literal_value.get(0);
+					result = r.nextInt(2);
+					case 2: // jeroslaw-wang two-sided
+					literal_value = jeroslaw_wang(clauses, unique_literals, literals, false);
+					selected_literal = literal_value.get(0);
+					result = literal_value.get(1);
+					// return = 0 if selected literal occurs in more negative clauses
+					case 3: // bohm's heuristic
+					selected_literal = bohm(clauses, unique_literals, literals);
+					result = r.nextInt(2);
+					case 4: // dlis
+					selected_literal = dlis(clauses, unique_literals, literals);
+					result = r.nextInt(2);
 				}
-				int result = r.nextInt(2);
+				
 				//System.out.println(selected_literal);
 				if (literals[1000 + selected_literal - 1] == null) {
 					if (result == 1) {
@@ -421,7 +453,8 @@ public class DavisPutnam {
 		String[] cont = new String[2];
 		cont[0] = "n";
 	    int ncount = 0;
-	    boolean anychanges;
+		boolean anychanges;
+		ArrayList<String> unique_literals = extract_literals(clauses);
 	    ArrayList<ArrayList<Integer>> flipt = new ArrayList<ArrayList<Integer>>(); //List with all values flipped per split
 	    ArrayList<Integer> flipped = new ArrayList<Integer>(); //Temp list with flipped literal
 	    ArrayList<Integer> splitd = new ArrayList<Integer>(); //List with all splitted literal
@@ -431,7 +464,7 @@ public class DavisPutnam {
 	    	int litchange = 0;
 	    	litchange = simplify(clauses, literals, clausetrue, nflips);  
 	    	if (litchange==0) {
-	    		splitted = split(clauses,literals, clausetrue, nflips, false);
+	    		splitted = split(clauses,literals, clausetrue, nflips, unique_literals, 0);
 	    		splitd.add(splitted);
 	    		if (splitted !=0) {
 	    			//System.out.println("Split " + splitted);
