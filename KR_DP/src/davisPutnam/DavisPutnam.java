@@ -459,13 +459,19 @@ public class DavisPutnam {
 		if (!nullify) {
 			if (firsttrue) {
 				literals[1000 + tochange - 1] = true;
+				//literals[((int) Math.floor(literals.length / 2)) + tochange] = true;
 				literals[1000 - tochange - 1] = false;
+				//literals[((int) Math.floor(literals.length / 2)) - tochange] = false;
 			} else {
 				literals[1000 + tochange - 1] = false;
+				//literals[((int) Math.floor(literals.length / 2)) + tochange] = false;
 				literals[1000 - tochange - 1] = true;
+				//literals[((int) Math.floor(literals.length / 2)) - tochange] = true;
 			}
 		} else {
 			literals[1000 + tochange - 1] = null;
+			//literals[((int) Math.floor(literals.length / 2)) + tochange] = null;
+			//literals[((int) Math.floor(literals.length / 2)) - tochange] = null;
 			literals[1000 - tochange - 1] = null;
 		}
 		
@@ -488,7 +494,7 @@ public class DavisPutnam {
 	    	int litchange = 0;
 	    	litchange = simplify(clauses, literals, clausetrue, nflips);  
 	    	if (litchange==0) {
-	    		splitted = split(clauses,literals, clausetrue, nflips, unique_literals, 4);
+	    		splitted = split(clauses,literals, clausetrue, nflips, unique_literals, 0);
 	    		splitd.add(splitted);
 	    		if (splitted !=0) {
 	    			//System.out.println("Split " + splitted);
@@ -619,12 +625,14 @@ public class DavisPutnam {
 		// TODO Auto-generated method stub
 		// pass the path to the file as a parameter 
 		File file2 = new File("newsudoku.txt"); // always open
+		//File file2 = new File("four_example.txt"); // always open
 	    Scanner sc2 = new Scanner(file2);
 	    boolean moreproblems = true;
 	    int nsudoku = 0;
 	    while (moreproblems) {
 		    //Reading the sudoku rules file (Scanner 1) and sudoku problem file (Scanner 2) 
 			File file = new File("sudoku-rules.txt"); 
+			//File file = new File("four_rules.txt"); 
 		    Scanner sc = new Scanner(file);  //open once
 		    String nextclause = sc.nextLine();
 		    String[] after = nextclause.split("\\s+");
@@ -636,8 +644,10 @@ public class DavisPutnam {
 		    	throw new FileNotFoundException();
 		    }
 		    ArrayList<ArrayList<String>> clauses = new ArrayList<ArrayList<String>>(); //List containing all the clauses with the literals
+		    if (maxvar < 900) maxvar = 999;
 		    Boolean[] literals = new Boolean[2*maxvar + 1];  //List containing boolean values of literals
 		    Arrays.fill(literals, null);
+		    System.out.println(literals.length);
 		    readSudoku(sc,sc2,clauses,nextclause,after);
 		    if (!sc2.hasNextLine()) {
 		    	moreproblems = false;
