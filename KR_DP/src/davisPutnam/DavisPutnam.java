@@ -152,7 +152,7 @@ public class DavisPutnam {
 		return literals;
 	}
 	
-	public static Integer jeroslow_wang_os(ArrayList<ArrayList<String>> clauses, Boolean[] clausetrue, ArrayList<String> unique_literals, Boolean[] literals) {
+	public static Integer jeroslow_wang_os(ArrayList<ArrayList<String>> clauses, Boolean[] clausetrue, ArrayList<String> unique_literals, Boolean[] literals, Random r) {
 		ArrayList<String> literals_null = new ArrayList<String>();
 		// remove any non-null literals
 		for (int i=0; i<unique_literals.size(); i++) {
@@ -169,8 +169,8 @@ public class DavisPutnam {
 			}
 		}
 		
-		String literal = "";
-		double jw_score = 0.0;
+		HashMap<String, Double> literal_values = new HashMap<String, Double>();
+		String literal;
 		
 		String current_literal;
 		double current_jw_score;
@@ -185,21 +185,28 @@ public class DavisPutnam {
 				}
 			}
 			
-			if (current_jw_score > jw_score) { // if the jeroslaw-wang os score is higher; update
-				jw_score = current_jw_score;
-				literal = current_literal;
-			}
+			literal_values.put(current_literal, current_jw_score);
 		}
 		
-	 return Integer.parseInt(literal);
+		Double max_value = literal_values.entrySet().stream().max((entry1, entry2) -> entry1.getValue() > entry2.getValue() ? 1 : -1).get().getValue();
+		String[] keys_max_value = Arrays.stream(literal_values.entrySet().stream().filter(entry -> Objects.equals(entry.getValue(), max_value)).map(Map.Entry::getKey).collect(toSet()).toArray()).toArray(String[]::new);
+		literal = keys_max_value[r.nextInt(keys_max_value.length)];
+
+		return Integer.parseInt(literal);
 	}
 	
-	public static ArrayList<Integer> jeroslow_wang_ts(ArrayList<ArrayList<String>> clauses, Boolean[] clausetrue, ArrayList<String> unique_literals, Boolean[] literals) {
+	public static ArrayList<Integer> jeroslow_wang_ts(ArrayList<ArrayList<String>> clauses, Boolean[] clausetrue, ArrayList<String> unique_literals, Boolean[] literals, Random r) {
 		ArrayList<String> literals_null = new ArrayList<String>();
-		// remove any non-null literals
+		// remove any non-null variables
 		for (int i=0; i<unique_literals.size(); i++) {
 			if (literals[1000 + Integer.parseInt(unique_literals.get(i)) - 1] == null) {
-				literals_null.add(unique_literals.get(i));
+				if (! unique_literals.get(i).substring(0, 1).equals("-") ) { // keep only positive literals aka variables
+					literals_null.add(unique_literals.get(i));
+				} else {
+					if (!literals_null.contains(flip_literal(unique_literals.get(i)))) {
+						literals_null.add(flip_literal(unique_literals.get(i)));
+					}
+				}
 			}
 		}
 		
@@ -211,9 +218,10 @@ public class DavisPutnam {
 			}
 		}
 		
-		ArrayList<Integer> literal_value = new ArrayList<Integer>();
+		HashMap<String, Double> variable_values = new HashMap<String, Double>();
+		HashMap<String, Double> literal_values = new HashMap<String, Double>();
 		
-		String literal = "";
+		String variable = "";
 		double jw_score = 0.0;
 		double flipped_jw_score = 0.0;
 		
@@ -239,16 +247,20 @@ public class DavisPutnam {
 				}
 			}
 			
-			if (current_jw_score + current_flipped_jw_score > jw_score + flipped_jw_score) { // if the jeroslaw-wang ts score is higher; update
-				jw_score = current_jw_score;
-				flipped_jw_score = current_flipped_jw_score;
-				literal = current_literal;
-			}
+			variable_values.put(current_literal, current_jw_score + current_flipped_jw_score);
+			literal_values.put(current_literal, current_jw_score);
+			literal_values.put(flipped_literal, current_flipped_jw_score);
 		}
 		
-		literal_value.add(Integer.parseInt(literal));
+		Double max_value = variable_values.entrySet().stream().max((entry1, entry2) -> entry1.getValue() > entry2.getValue() ? 1 : -1).get().getValue();
+		String[] keys_max_value = Arrays.stream(variable_values.entrySet().stream().filter(entry -> Objects.equals(entry.getValue(), max_value)).map(Map.Entry::getKey).collect(toSet()).toArray()).toArray(String[]::new);
+		variable = keys_max_value[r.nextInt(keys_max_value.length)];
 		
-		if (jw_score >= flipped_jw_score) { // if J(x) >= J(x')
+		ArrayList<Integer> literal_value = new ArrayList<Integer>();
+		
+		literal_value.add(Integer.parseInt(variable));
+		
+		if (literal_values.get(variable) >= literal_values.get(flip_literal(variable))) { // if J(x) >= J(x')
 			literal_value.add(1);
 		} else {
 			literal_value.add(0);
@@ -267,7 +279,7 @@ public class DavisPutnam {
 		return flipped_literal;
 	}
 
-	public static Integer bohm(ArrayList<ArrayList<String>> clauses, Boolean[] clausetrue, ArrayList<String> unique_literals, Boolean[] literals) {
+	public static Integer bohm(ArrayList<ArrayList<String>> clauses, Boolean[] clausetrue, ArrayList<String> unique_literals, Boolean[] literals, Random r) {
 		ArrayList<String> literals_null = new ArrayList<String>();
 		// remove any non-null literals
 		for (int i=0; i<unique_literals.size(); i++) {
@@ -307,12 +319,14 @@ public class DavisPutnam {
 				}
 			}
 		}
+		
+		HashMap<String, Double> literal_values = new HashMap<String, Double>();
 
 		// calculate the bohm score for all literals
 		for (int i=0; i<literals_null.size(); i++) { // loop over all literals
 			current_literal = literals_null.get(i);
 			flipped_literal = flip_literal(current_literal);
-			
+						
 			ArrayList<Double> vector = new ArrayList<Double>();
 
 			// populate the bohm vector
@@ -338,18 +352,18 @@ public class DavisPutnam {
 				vector.add(score);
 			}
 
-			// get the magnitude of the bohm vector
+			// get the magnitude of the bohm vector and add it to the hashmap
 			double current_bohm_score = 0.0;
 			for (int k=0; k<vector.size(); k++) {
 				current_bohm_score += vector.get(k) * vector.get(k);
 			}
 			current_bohm_score = Math.sqrt(current_bohm_score);
-
-			if (current_bohm_score > bohm_score) { // if the bohm score is higher; update
-				bohm_score = current_bohm_score;
-				literal = current_literal;
-			}
+			literal_values.put(current_literal, current_bohm_score);
 		}
+		
+		Double max_value = literal_values.entrySet().stream().max((entry1, entry2) -> entry1.getValue() > entry2.getValue() ? 1 : -1).get().getValue();
+		String[] keys_max_value = Arrays.stream(literal_values.entrySet().stream().filter(entry -> Objects.equals(entry.getValue(), max_value)).map(Map.Entry::getKey).collect(toSet()).toArray()).toArray(String[]::new);
+		literal = keys_max_value[r.nextInt(keys_max_value.length)];
 
 		return Integer.parseInt(literal);
 	}
@@ -415,16 +429,16 @@ public class DavisPutnam {
 					result = r.nextInt(2);
 					break;
 					case 1: // jeroslow-wang one-sided
-					selected_literal = jeroslow_wang_os(clauses, clausetrue, unique_literals, literals);
+					selected_literal = jeroslow_wang_os(clauses, clausetrue, unique_literals, literals, r);
 					result = r.nextInt(2);
 					break;
 					case 2: // jeroslow-wang two-sided
-					literal_value = jeroslow_wang_ts(clauses, clausetrue, unique_literals, literals);
+					literal_value = jeroslow_wang_ts(clauses, clausetrue, unique_literals, literals, r);
 					selected_literal = literal_value.get(0);
 					result = literal_value.get(1);
 					break;
 					case 3: // bohm's heuristic
-					selected_literal = bohm(clauses, clausetrue, unique_literals, literals);
+					selected_literal = bohm(clauses, clausetrue, unique_literals, literals, r);
 					result = r.nextInt(2);
 					break;
 					case 4: // rdlis
@@ -589,7 +603,7 @@ public class DavisPutnam {
 	    	int litchange = 0;
 	    	litchange = simplify(clauses, literals, clausetrue, nflips);  
 	    	if (litchange==0) {
-	    		splitted = split(clauses,literals, clausetrue, nflips, unique_literals, 4);
+	    		splitted = split(clauses,literals, clausetrue, nflips, unique_literals, 1);
 	    		splitd.add(splitted);
 	    		if (splitted !=0) {
 	    			//System.out.println("Split " + splitted);
