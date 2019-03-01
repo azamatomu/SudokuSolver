@@ -24,18 +24,18 @@ public class DavisPutnam {
 		}
 		return newList;
 	}
-	public static void pureLiteral(ArrayList<String> oneclauses, Boolean[] literals, ArrayList<Integer> nflips) {
+	public static void pureLiteral(ArrayList<String> oneclauses, HashMap<String, Boolean> literals, ArrayList<Integer> nflips) {
 		for (int i = 0; i < oneclauses.size(); i ++) {
 	    	if (oneclauses.get(i).charAt(0) == '-') {
 	    		if(!oneclauses.contains(oneclauses.get(i).substring(1))) {
-	    			flipLiteral(literals, Integer.parseInt(oneclauses.get(i)), true, false, nflips);
+	    			flipLiteral(literals, oneclauses.get(i), true, false, nflips);
 	    			//literals[1000 + Integer.parseInt(oneclauses.get(i)) -1] = true;
 	    			//literals[1000 - Integer.parseInt(oneclauses.get(i)) -1] = false;
 	    			System.out.println("Pure negative literal at " + oneclauses.get(i));
 	    		}
 	    	} else {
 	    		if(!oneclauses.contains('-' + oneclauses.get(i))) {
-	    			flipLiteral(literals, Integer.parseInt(oneclauses.get(i)), true, false, nflips);
+	    			flipLiteral(literals, oneclauses.get(i), true, false, nflips);
 	    			//literals[1000 + Integer.parseInt(oneclauses.get(i)) -1] = true;
 	    			//flipLiteral(literals, Integer.parseInt(oneclauses.get(i)), true, false);
 	    			//literals[1000 - Integer.parseInt(oneclauses.get(i)) -1] = false;
@@ -44,26 +44,27 @@ public class DavisPutnam {
 	    	}
 	    }
 	}
-	public static int unitLiteral(ArrayList<ArrayList<String>> clauses, Boolean[] literals, ArrayList<Integer> nflips) {
+	
+	public static String unitLiteral(ArrayList<ArrayList<String>> clauses, HashMap<String, Boolean> literals, ArrayList<Integer> nflips) {
 		Random r = new Random();
 		for (int i = 0; i < clauses.size(); i ++) {
 			int satcount = 0;
 			int unsatcount = 0;
 			int nullcount = 0;
-			ArrayList<Integer> ii = new ArrayList<Integer>();
-			ArrayList<Integer> uu = new ArrayList<Integer>();
+			ArrayList<String> ii = new ArrayList<String>();
+			ArrayList<String> uu = new ArrayList<String>();
 			for (int m = 0; m < clauses.get(i).size(); m ++) {
-				if (literals[1000 + Integer.parseInt(clauses.get(i).get(m)) - 1] != null) {
-					if (literals[1000 + Integer.parseInt(clauses.get(i).get(m)) - 1] == true) {
+				if (literals.get(clauses.get(i).get(m)) != null) {
+					if (literals.get(clauses.get(i).get(m)) == true) {
 						satcount += 1;
 					}
 					else {
 						unsatcount += 1;
-						uu.add(Integer.parseInt(clauses.get(i).get(m)));
+						uu.add(clauses.get(i).get(m));
 					}
 				} else {
 					nullcount += 1;
-					ii.add(Integer.parseInt(clauses.get(i).get(m)));
+					ii.add(clauses.get(i).get(m));
 				}
 			}
 			if (nullcount == 1 && (clauses.get(i).size() - unsatcount == nullcount)) {
@@ -84,7 +85,7 @@ public class DavisPutnam {
     			//printLiterals(literals, clauses.get(i));
 			}
 	    }
-		return 0;
+		return "";
 	}
 	
 	
@@ -99,18 +100,18 @@ public class DavisPutnam {
 	    }
 	}
 	
-	public static boolean doTrue(ArrayList<ArrayList<String>> clauses, Boolean[] literals, Boolean[] clausetrue) {
+	public static boolean doTrue(ArrayList<ArrayList<String>> clauses, HashMap<String, Boolean> literals, Boolean[] clausetrue) {
 		boolean anychanges = false;
 		for (int i = 0; i < clauses.size(); i ++) {
 			int count = 0;
 			int nulls = 0;
 			for (int m = 0; m < clauses.get(i).size(); m ++) {
-				if (literals[1000 + Integer.parseInt(clauses.get(i).get(m)) -1] != null) {
-					if (literals[1000 + Integer.parseInt(clauses.get(i).get(m)) -1] == true) {
+				if (literals.get(clauses.get(i).get(m)) != null) {
+					if (literals.get(clauses.get(i).get(m)) == true) {
 						count += 1;
 					}
 				} else {
-					nulls+=1;
+					nulls++;
 				}
 			}
 			if (count == 0 && nulls == 0) {
@@ -129,12 +130,12 @@ public class DavisPutnam {
 		return anychanges;
 	}
 	
-	public static int simplify(ArrayList<ArrayList<String>> clauses, Boolean[] literals, Boolean[] clausetrue, ArrayList<Integer> nflips) {
+	public static String simplify(ArrayList<ArrayList<String>> clauses, HashMap<String, Boolean> literals, Boolean[] clausetrue, ArrayList<Integer> nflips) {
 		boolean anychanges = true;
 		    anychanges = false;
 		    ArrayList<String> oneclauses = intoOneList(clauses);
 		    //pureLiteral(oneclauses, literals, nflips);
-		    int litchange = unitLiteral(clauses, literals, nflips);
+		    String litchange = unitLiteral(clauses, literals, nflips);
 		    anychanges = doTrue(clauses, literals, clausetrue);
 		    return litchange;
 		   
@@ -152,20 +153,20 @@ public class DavisPutnam {
 		return literals;
 	}
 	
-	public static ArrayList<String> null_literals(ArrayList<String> unique_literals, Boolean[] literals) {
+	public static ArrayList<String> null_literals(ArrayList<String> unique_literals, HashMap<String, Boolean> literals) {
 		ArrayList<String> literals_null = new ArrayList<String>();
 		for (int i=0; i<unique_literals.size(); i++) {
-			if (literals[1000 + Integer.parseInt(unique_literals.get(i)) - 1] == null) {
+			if (literals.get(unique_literals.get(i)) == null) {
 				literals_null.add(unique_literals.get(i));
 			}
 		}
 		return literals_null;
 	}
 	
-	public static ArrayList<String> null_variables(ArrayList<String> unique_literals, Boolean[] literals) {
+	public static ArrayList<String> null_variables(ArrayList<String> unique_literals, HashMap<String, Boolean> literals) {
 		ArrayList<String> variables_null = new ArrayList<String>();
 		for (int i=0; i<unique_literals.size(); i++) {
-			if (literals[1000 + Integer.parseInt(unique_literals.get(i)) - 1] == null) {
+			if (literals.get(unique_literals.get(i)) == null) {
 				if (! unique_literals.get(i).substring(0, 1).equals("-") ) { // keep only positive literals (variables)
 					variables_null.add(unique_literals.get(i));
 				} else {
@@ -188,7 +189,7 @@ public class DavisPutnam {
 		return clauses_null;
 	}
 	
-	public static Integer jeroslow_wang_os(ArrayList<String> literals_null, ArrayList<ArrayList<String>> clauses_null, Random r) {
+	public static String jeroslow_wang_os(ArrayList<String> literals_null, ArrayList<ArrayList<String>> clauses_null, Random r) {
 		HashMap<String, Double> literal_values = new HashMap<String, Double>();
 		String literal;
 		
@@ -212,16 +213,12 @@ public class DavisPutnam {
 		String[] keys_max_value = Arrays.stream(literal_values.entrySet().stream().filter(entry -> Objects.equals(entry.getValue(), max_value)).map(Map.Entry::getKey).collect(toSet()).toArray()).toArray(String[]::new);
 		literal = keys_max_value[r.nextInt(keys_max_value.length)];
 
-		return Integer.parseInt(literal);
+		return literal;
 	}
 	
-	public static ArrayList<Integer> jeroslow_wang_ts(ArrayList<String> variables_null, ArrayList<ArrayList<String>> clauses_null, Random r) {		
+	public static ArrayList<String> jeroslow_wang_ts(ArrayList<String> variables_null, ArrayList<ArrayList<String>> clauses_null, Random r) {		
 		HashMap<String, Double> variable_values = new HashMap<String, Double>();
 		HashMap<String, Double> literal_values = new HashMap<String, Double>();
-		
-		String variable = "";
-		double jw_score = 0.0;
-		double flipped_jw_score = 0.0;
 		
 		String current_literal;
 		String flipped_literal;
@@ -252,16 +249,16 @@ public class DavisPutnam {
 		
 		Double max_value = variable_values.entrySet().stream().max((entry1, entry2) -> entry1.getValue() > entry2.getValue() ? 1 : -1).get().getValue();
 		String[] keys_max_value = Arrays.stream(variable_values.entrySet().stream().filter(entry -> Objects.equals(entry.getValue(), max_value)).map(Map.Entry::getKey).collect(toSet()).toArray()).toArray(String[]::new);
-		variable = keys_max_value[r.nextInt(keys_max_value.length)];
+		String variable = keys_max_value[r.nextInt(keys_max_value.length)];
 		
-		ArrayList<Integer> literal_value = new ArrayList<Integer>();
+		ArrayList<String> literal_value = new ArrayList<String>();
 		
-		literal_value.add(Integer.parseInt(variable));
+		literal_value.add(variable);
 		
 		if (literal_values.get(variable) >= literal_values.get(flip_literal(variable))) { // if J(x) >= J(x')
-			literal_value.add(1);
+			literal_value.add("1");
 		} else {
-			literal_value.add(0);
+			literal_value.add("0");
 		}
 		
 		return literal_value;
@@ -277,7 +274,7 @@ public class DavisPutnam {
 		return flipped_literal;
 	}
 
-	public static Integer bohm(ArrayList<String> literals_null, ArrayList<ArrayList<String>> clauses_null, Random r) {		
+	public static String bohm(ArrayList<String> literals_null, ArrayList<ArrayList<String>> clauses_null, Random r) {		
 		String literal = "";
 		String current_literal;
 		String flipped_literal;
@@ -347,10 +344,10 @@ public class DavisPutnam {
 		String[] keys_max_value = Arrays.stream(literal_values.entrySet().stream().filter(entry -> Objects.equals(entry.getValue(), max_value)).map(Map.Entry::getKey).collect(toSet()).toArray()).toArray(String[]::new);
 		literal = keys_max_value[r.nextInt(keys_max_value.length)];
 
-		return Integer.parseInt(literal);
+		return literal;
 	}
 
-	public static Integer rdlis(ArrayList<String> literals_null, ArrayList<ArrayList<String>> clauses_null, Random r) {	
+	public static String rdlis(ArrayList<String> literals_null, ArrayList<ArrayList<String>> clauses_null, Random r) {	
 		String literal;
 		String current_literal;
 		HashMap<String, Integer> literal_counts = new HashMap<String, Integer>();
@@ -373,10 +370,10 @@ public class DavisPutnam {
 		String[] keys_max_value = Arrays.stream(literal_counts.entrySet().stream().filter(entry -> Objects.equals(entry.getValue(), max_value)).map(Map.Entry::getKey).collect(toSet()).toArray()).toArray(String[]::new);
 		literal = keys_max_value[r.nextInt(keys_max_value.length)];
 
-		return Integer.parseInt(literal);
+		return literal;
 	}
 	
-	public static int split(ArrayList<ArrayList<String>> clauses, Boolean[] literals, Boolean[] clausetrue, ArrayList<Integer> nflips, ArrayList<String> unique_literals, Integer use_heuristic) {
+	public static String split(ArrayList<ArrayList<String>> clauses, HashMap<String, Boolean> literals, Boolean[] clausetrue, ArrayList<Integer> nflips, ArrayList<String> unique_literals, Integer use_heuristic) {
 		// consider only non-assigned literals
 		ArrayList<String> literals_null = null_literals(unique_literals, literals);
 		
@@ -389,13 +386,13 @@ public class DavisPutnam {
 		Random r = new Random();
 		
 		if (getnulls(clausetrue).size() != 0) {
-			ArrayList<Integer> literal_value;
-			int selected_literal = 0;
+			ArrayList<String> literal_value;
+			String selected_literal = "";
 			int result = 0;
 			
 			switch (use_heuristic) {
 				case 0: // no heuristic
-					selected_literal = Integer.parseInt(literals_null.get(r.nextInt(literals_null.size())));
+					selected_literal = literals_null.get(r.nextInt(literals_null.size()));
 					result = r.nextInt(2);
 					break;
 				case 1: // jeroslow-wang one-sided
@@ -405,7 +402,11 @@ public class DavisPutnam {
 				case 2: // jeroslow-wang two-sided
 					literal_value = jeroslow_wang_ts(variables_null, clauses_null, r);
 					selected_literal = literal_value.get(0);
-					result = literal_value.get(1);
+					if (literal_value.get(1) == "1") {
+						result = 1;
+					} else {
+						result = 0;
+					}
 					break;
 				case 3: // bohm's heuristic
 					selected_literal = bohm(literals_null, clauses_null, r);
@@ -417,7 +418,7 @@ public class DavisPutnam {
 					break;
 			}
 			
-			if (selected_literal != 0) {
+			if (selected_literal != "") {
 				if (result == 1) {
 					flipLiteral(literals, selected_literal, true, false, nflips);
 				} else {
@@ -425,10 +426,10 @@ public class DavisPutnam {
 				}
 				return selected_literal;
 			} else {
-				return 0;
+				return "";
 			}
 		} else {
-			return 0;
+			return "";
 		}
 	}
 	
@@ -483,28 +484,34 @@ public class DavisPutnam {
 		}
 		System.out.println(countC + " true clauses with " + countL + " true literals, and " + countF + " false clauses.");
 	}
-	public static void outputSudoku(Boolean[] literals) {
+	public static void outputSudoku(HashMap<String, Boolean> literals) {
 		int count = 0;
-		for (int i = 0; i < literals.length; i ++) {
-			if (literals[i] != null && literals[i] && i > 1000) {
-				System.out.print(String.valueOf(i - 1000 + 1).charAt(2) + " ");
-				count += 1;
-				if (count % 9 == 0) {
-					System.out.println();
+		for (int i=1; i<=9; i++) {
+			for (int j=1; j<=9; j++) {
+				for (int k=1; k<=9; k++) {
+					String key = String.valueOf(i) + String.valueOf(j) + String.valueOf(k);
+					if (literals.get(key) == true) {
+						System.out.print(String.valueOf(k) + " ");
+						count++;
+						if (count % 9 == 0) {
+							System.out.println();
+						}
+					}
 				}
-				
 			}
 		}	
 	}
-	public static void readSudoku(Scanner rules, Scanner problem, ArrayList<ArrayList<String>> clauses, String nextclause, String[] after) {
+	
+	public static void readSudoku(Scanner rules, Scanner problem, ArrayList<ArrayList<String>> clauses, HashMap<String, Boolean> literals, String nextclause, String[] after) {
 		while (rules.hasNextLine()) {
 	    	int j = 0;
 	    	nextclause = rules.nextLine();
 	    	ArrayList<String> singleList = new ArrayList<String>();
 	    	after = nextclause.split("\\s+");
 	    	while (!after[j].equals("0")) {
+	    		literals.put(after[j], null);
 	    		singleList.add(after[j]);
-	    		j += 1;
+	    		j++;
 	    	}
 	    	clauses.add(singleList);
 	    }
@@ -517,37 +524,31 @@ public class DavisPutnam {
 	    	ArrayList<String> singleList = new ArrayList<String>();
 	    	after = nextclause.split("\\s+");
 	    	while (!after[j].equals("0")) {
+	    		literals.put(after[j], null);
 	    		singleList.add(after[j]);
-	    		j += 1;
+	    		j++;
 	    	}
 	    	clauses.add(singleList);
-	    	
 	    }  
 	}
-	public static void flipLiteral(Boolean[] literals, int tochange, Boolean firsttrue, Boolean nullify, ArrayList<Integer> nflips) {
+	
+	public static void flipLiteral(HashMap<String, Boolean> literals, String tochange, Boolean firsttrue, Boolean nullify, ArrayList<Integer> nflips) {
 		nflips.set(nflips.size()-1, nflips.get(nflips.size()-1) + 2);
 		if (!nullify) {
 			if (firsttrue) {
-				literals[1000 + tochange - 1] = true;
-				//literals[((int) Math.floor(literals.length / 2)) + tochange] = true;
-				literals[1000 - tochange - 1] = false;
-				//literals[((int) Math.floor(literals.length / 2)) - tochange] = false;
+				literals.put(tochange, true);
+				literals.put(flip_literal(tochange), false);
 			} else {
-				literals[1000 + tochange - 1] = false;
-				//literals[((int) Math.floor(literals.length / 2)) + tochange] = false;
-				literals[1000 - tochange - 1] = true;
-				//literals[((int) Math.floor(literals.length / 2)) - tochange] = true;
+				literals.put(tochange, false);
+				literals.put(flip_literal(tochange), true);
 			}
 		} else {
-			literals[1000 + tochange - 1] = null;
-			//literals[((int) Math.floor(literals.length / 2)) + tochange] = null;
-			//literals[((int) Math.floor(literals.length / 2)) - tochange] = null;
-			literals[1000 - tochange - 1] = null;
-		}
-		
+			literals.put(tochange, null);
+			literals.put(flip_literal(tochange), null);
+		}	
 	}
 	
-	public static void solveSudoku(ArrayList<ArrayList<String>> clauses, Boolean[] literals, Boolean[] clausetrue, ArrayList<Integer> nflips) {
+	public static void solveSudoku(ArrayList<ArrayList<String>> clauses, HashMap<String, Boolean> literals, Boolean[] clausetrue, ArrayList<Integer> nflips) {
 		nflips.add(0);
 		String[] cont = new String[2];
 		cont[0] = "n";
@@ -555,21 +556,21 @@ public class DavisPutnam {
 	    boolean anychanges;
 	    ArrayList<String> unique_literals = extract_literals(clauses);
 	    boolean cdcl = false;
-	    ArrayList<ArrayList<Integer>> flipt = new ArrayList<ArrayList<Integer>>(); //List with all values flipped per split
-	    ArrayList<Integer> flipped = new ArrayList<Integer>(); //Temp list with flipped literal
-	    ArrayList<Integer> splitd = new ArrayList<Integer>(); //List with all splitted literal
-	    ArrayList<Integer> backtracksplitd= new ArrayList<Integer>(); //Splitted values that were used in backtracking
-	    int splitted = 0; //Temp value with splitted literal
+	    ArrayList<ArrayList<String>> flipt = new ArrayList<ArrayList<String>>(); //List with all values flipped per split
+	    ArrayList<String> flipped = new ArrayList<String>(); //Temp list with flipped literal
+	    ArrayList<String> splitd = new ArrayList<String>(); //List with all splitted literal
+	    ArrayList<String> backtracksplitd= new ArrayList<String>(); //Splitted values that were used in backtracking
+	    String splitted = ""; //Temp value with splitted literal
 	    while (cont[0] != "t") {
-	    	int litchange = 0;
+	    	String litchange = "";
 	    	litchange = simplify(clauses, literals, clausetrue, nflips);  
-	    	if (litchange==0) {
-	    		splitted = split(clauses,literals, clausetrue, nflips, unique_literals, 1);
+	    	if (litchange == "") {
+	    		splitted = split(clauses, literals, clausetrue, nflips, unique_literals, 1);
 	    		splitd.add(splitted);
-	    		if (splitted !=0) {
+	    		if (splitted != "") {
 	    			//System.out.println("Split " + splitted);
 	    			flipt.add(flipped);
-	    			flipped = new ArrayList<Integer>();
+	    			flipped = new ArrayList<String>();
 	    		}
 	    	} else {
 	    		flipped.add(litchange);
@@ -584,7 +585,7 @@ public class DavisPutnam {
 		    		if (falsecount == 1) {
 		    			splitd.add(splitted);
 		    			flipt.add(flipped);
-		    			flipped = new ArrayList<Integer>();
+		    			flipped = new ArrayList<String>();
 		    		}
 		    		if (falsecount > 50 + backtracksplitd.size()) {
 			    		backtracksplitd.clear();
@@ -625,7 +626,7 @@ public class DavisPutnam {
 		    		if (falsecount == 1) {
 		    			splitd.add(splitted);
 		    			flipt.add(flipped);
-		    			flipped = new ArrayList<Integer>();
+		    			flipped = new ArrayList<String>();
 		    		}
 		    		//System.out.println(flipped);
 		    		//System.out.println("False clause: " + clauses.get(Integer.parseInt(cont[1])));
@@ -664,13 +665,12 @@ public class DavisPutnam {
 	    }
 	    System.out.println(ncount);
 	    int count = 0;
-	    for (int i = 0; i < literals.length; i ++) {
-	    	if (literals[i] != null) {
-	    		if (literals[i] == true) {
-	    			//System.out.println(i - 1000 + 1);
-	    			count += 1;
+	    for (Boolean value : literals.values()) {
+	    	if (value != null) {
+	    		if (value == true) {
+	    			count++;
 	    		}
-	    	}	
+	    	}
 	    }
 	    //System.out.println("SAT with " + count);
 	    outputSudoku(literals);
@@ -716,10 +716,12 @@ public class DavisPutnam {
 		    }
 		    ArrayList<ArrayList<String>> clauses = new ArrayList<ArrayList<String>>(); //List containing all the clauses with the literals
 		    if (maxvar < 900) maxvar = 999;
-		    Boolean[] literals = new Boolean[2*maxvar + 1];  //List containing boolean values of literals
-		    Arrays.fill(literals, null);
-		    System.out.println(literals.length);
-		    readSudoku(sc,sc2,clauses,nextclause,after);
+		    
+		    HashMap<String, Boolean> literals = new HashMap<String, Boolean>();
+//		    Boolean[] literals = new Boolean[2*maxvar + 1];  //List containing boolean values of literals
+//		    Arrays.fill(literals, null);
+//		    System.out.println(literals.length);
+		    readSudoku(sc, sc2, clauses, literals, nextclause, after);
 		    if (!sc2.hasNextLine()) {
 		    	moreproblems = false;
 		    }
