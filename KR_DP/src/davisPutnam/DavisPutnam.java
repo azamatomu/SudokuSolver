@@ -564,7 +564,7 @@ public class DavisPutnam {
 	    	int litchange = 0;
 	    	litchange = simplify(clauses, literals, clausetrue, nflips);  
 	    	if (litchange==0) {
-	    		splitted = split(clauses,literals, clausetrue, nflips, unique_literals, 4);
+	    		splitted = split(clauses,literals, clausetrue, nflips, unique_literals, 1);
 	    		splitd.add(splitted);
 	    		if (splitted !=0) {
 	    			//System.out.println("Split " + splitted);
@@ -728,108 +728,11 @@ public class DavisPutnam {
 		    Boolean[] clausetrue= new Boolean[clauses.size()]; 
 		    Arrays.fill(clausetrue, null);
 		    //System.out.println("There are " + clauses.size() + " clauses.");
-		    /*
-			for (int i = 0; i < clauses.size(); i ++) {
-		    
-		    	if (clauses.get(i).size() == 1) {
-		    		System.out.print(clauses.get(i) + " ");
-		    	}
-		    }
-		    */
 		    nsudoku++;
 		    ArrayList<Integer> nflips = new ArrayList<Integer>();
 		    solveSudoku(clauses, literals, clausetrue, nflips);
 		    System.out.println(nflips.get(nflips.size()-1));
-		    /*
-		    // Start the algorithm
-		    String[] cont = new String[2]; 
-		    // cont = t when all clauses are true
-		    cont[0] = "n";
-		    int ncount = 0;
-		    boolean anychanges;
-		    ArrayList<ArrayList<Integer>> flipt = new ArrayList<ArrayList<Integer>>(); //List with all values flipped per split
-		    ArrayList<Integer> flipped = new ArrayList<Integer>(); //Temp list with flipped literal
-		    ArrayList<Integer> splitd = new ArrayList<Integer>(); //List with all splitted literal
-		    ArrayList<Integer> backtracksplitd= new ArrayList<Integer>(); //Splitted values that were used in backtracking
-		    int splitted = 0; //Temp value with splitted literal
-		    while (cont[0] != "t") {
-		    	int litchange = 0;
-		    	litchange = simplify(clauses, literals, clausetrue);  
-		    	if (litchange==0) {
-		    		splitted = split(clauses,literals, clausetrue);
-		    		splitd.add(splitted);
-		    		if (splitted !=0) {
-		    			//System.out.println("Split " + splitted);
-		    			flipt.add(flipped);
-		    			flipped = new ArrayList<Integer>();
-		    		}
-		    	} else {
-		    		flipped.add(litchange);
-		    		//System.out.println("Unit " + litchange);
-		    	}
-		    	int falsecount = 0;	
-		    	anychanges = doTrue(clauses, literals, clausetrue);
-		    	cont = checkTrue(clausetrue);
-		    	outer: while (cont[0] == "f") {
-		    		falsecount++;
-		    		if (falsecount == 1) {
-		    			splitd.add(splitted);
-		    			flipt.add(flipped);
-		    			flipped = new ArrayList<Integer>();
-		    		}
-		    		//System.out.println(flipped);
-		    		
-		    		//System.out.println("False clause: " + clauses.get(Integer.parseInt(cont[1])));
-	    			//printLiterals(literals, clauses.get(Integer.parseInt(cont[1])));
-		    		if (falsecount > 50 + backtracksplitd.size()) {
-			    		backtracksplitd.clear();
-			    		System.out.println("Reset backtrack.");
-			    	}
-	    			for (int j = splitd.size() - 1; j >= 0; j--) {
-	    				for (int i = 0; i < flipt.get(j).size(); i++) {
-	    					literals[1000 + flipt.get(j).get(i) - 1] = null;
-	    	    			literals[1000 - flipt.get(j).get(i) - 1] = null;
-	    	    		}
-	    				literals[1000 + splitd.get(j) - 1] = null;
-	    				literals[1000 - splitd.get(j) - 1] = null;
-	    				//System.out.println(splitd.get(j));
-	    				if (!backtracksplitd.contains(splitd.get(j))) {
-	    					doTrue(clauses, literals, clausetrue);
-	    					//System.out.println("bck out!");
-	    				}
-	    				cont = checkTrue(clausetrue);
-	    				if (cont[0] != "f") {
-	    					backtracksplitd.add(splitd.get(j));
-	    					//System.out.println("out!");
-	    					break outer; 
-	    				}
-	    			}
-		    	}
-		    	if (ncount % 100  == 0) {
-		    		System.out.println(ncount);
-		    	}
-		    	ncount += 1;
-		    }
-		    System.out.println(ncount);
-		    int count = 0;
-		    for (int i = 0; i < literals.length; i ++) {
-		    	if (literals[i] != null) {
-		    		if (literals[i] == true) {
-		    			System.out.println(i - 1000 + 1);
-		    			count += 1;
-		    			
-		    		}
-		    	}	
-		    }
-		    System.out.println("SAT with " + count);
-		    outputSudoku(literals);
-		    */
 	    }
 	    System.out.println("You have " + nsudoku + " sudokus.");
-	    
-	    
-	    
-
 	}
-
 }
