@@ -152,23 +152,43 @@ public class DavisPutnam {
 		return literals;
 	}
 	
-	public static Integer jeroslow_wang_os(ArrayList<ArrayList<String>> clauses, Boolean[] clausetrue, ArrayList<String> unique_literals, Boolean[] literals, Random r) {
+	public static ArrayList<String> null_literals(ArrayList<String> unique_literals, Boolean[] literals) {
 		ArrayList<String> literals_null = new ArrayList<String>();
-		// remove any non-null literals
 		for (int i=0; i<unique_literals.size(); i++) {
 			if (literals[1000 + Integer.parseInt(unique_literals.get(i)) - 1] == null) {
 				literals_null.add(unique_literals.get(i));
 			}
 		}
-		
+		return literals_null;
+	}
+	
+	public static ArrayList<String> null_variables(ArrayList<String> unique_literals, Boolean[] literals) {
+		ArrayList<String> variables_null = new ArrayList<String>();
+		for (int i=0; i<unique_literals.size(); i++) {
+			if (literals[1000 + Integer.parseInt(unique_literals.get(i)) - 1] == null) {
+				if (! unique_literals.get(i).substring(0, 1).equals("-") ) { // keep only positive literals (variables)
+					variables_null.add(unique_literals.get(i));
+				} else {
+					if (!variables_null.contains(flip_literal(unique_literals.get(i)))) {
+						variables_null.add(flip_literal(unique_literals.get(i)));
+					}
+				}
+			}
+		}
+		return variables_null;
+	}
+	
+	public static ArrayList<ArrayList<String>> null_clauses(ArrayList<ArrayList<String>> clauses, Boolean[] clausetrue) {
 		ArrayList<ArrayList<String>> clauses_null = new ArrayList<ArrayList<String>>();
-		// remove any satisfied clauses
 		for (int i=0; i<clauses.size(); i++) {
 			if (clausetrue[i] == null) {
 				clauses_null.add(clauses.get(i));
 			}
 		}
-		
+		return clauses_null;
+	}
+	
+	public static Integer jeroslow_wang_os(ArrayList<String> literals_null, ArrayList<ArrayList<String>> clauses_null, Random r) {
 		HashMap<String, Double> literal_values = new HashMap<String, Double>();
 		String literal;
 		
@@ -195,29 +215,7 @@ public class DavisPutnam {
 		return Integer.parseInt(literal);
 	}
 	
-	public static ArrayList<Integer> jeroslow_wang_ts(ArrayList<ArrayList<String>> clauses, Boolean[] clausetrue, ArrayList<String> unique_literals, Boolean[] literals, Random r) {
-		ArrayList<String> literals_null = new ArrayList<String>();
-		// remove any non-null variables
-		for (int i=0; i<unique_literals.size(); i++) {
-			if (literals[1000 + Integer.parseInt(unique_literals.get(i)) - 1] == null) {
-				if (! unique_literals.get(i).substring(0, 1).equals("-") ) { // keep only positive literals aka variables
-					literals_null.add(unique_literals.get(i));
-				} else {
-					if (!literals_null.contains(flip_literal(unique_literals.get(i)))) {
-						literals_null.add(flip_literal(unique_literals.get(i)));
-					}
-				}
-			}
-		}
-		
-		ArrayList<ArrayList<String>> clauses_null = new ArrayList<ArrayList<String>>();
-		// remove any satisfied clauses
-		for (int i=0; i<clauses.size(); i++) {
-			if (clausetrue[i] == null) {
-				clauses_null.add(clauses.get(i));
-			}
-		}
-		
+	public static ArrayList<Integer> jeroslow_wang_ts(ArrayList<String> variables_null, ArrayList<ArrayList<String>> clauses_null, Random r) {		
 		HashMap<String, Double> variable_values = new HashMap<String, Double>();
 		HashMap<String, Double> literal_values = new HashMap<String, Double>();
 		
@@ -230,8 +228,8 @@ public class DavisPutnam {
 		double current_jw_score;
 		double current_flipped_jw_score;
 		
-		for (int i=0; i<literals_null.size(); i++) { // loop over the literals
-			current_literal = literals_null.get(i);
+		for (int i=0; i<variables_null.size(); i++) { // loop over the literals
+			current_literal = variables_null.get(i);
 			flipped_literal = flip_literal(current_literal);
 			
 			current_jw_score = 0.0;
@@ -279,23 +277,7 @@ public class DavisPutnam {
 		return flipped_literal;
 	}
 
-	public static Integer bohm(ArrayList<ArrayList<String>> clauses, Boolean[] clausetrue, ArrayList<String> unique_literals, Boolean[] literals, Random r) {
-		ArrayList<String> literals_null = new ArrayList<String>();
-		// remove any non-null literals
-		for (int i=0; i<unique_literals.size(); i++) {
-			if (literals[1000 + Integer.parseInt(unique_literals.get(i)) - 1] == null) {
-				literals_null.add(unique_literals.get(i));
-			}
-		}
-		
-		ArrayList<ArrayList<String>> clauses_null = new ArrayList<ArrayList<String>>();
-		// remove any satisfied clauses
-		for (int i=0; i<clauses.size(); i++) {
-			if (clausetrue[i] == null) {
-				clauses_null.add(clauses.get(i));
-			}
-		}
-		
+	public static Integer bohm(ArrayList<String> literals_null, ArrayList<ArrayList<String>> clauses_null, Random r) {		
 		String literal = "";
 		String current_literal;
 		String flipped_literal;
@@ -368,23 +350,7 @@ public class DavisPutnam {
 		return Integer.parseInt(literal);
 	}
 
-	public static Integer rdlis(ArrayList<ArrayList<String>> clauses, Boolean[] clausetrue, ArrayList<String> unique_literals, Boolean[] literals, Random r) {
-		ArrayList<String> literals_null = new ArrayList<String>();
-		// remove any non-null literals
-		for (int i=0; i<unique_literals.size(); i++) {
-			if (literals[1000 + Integer.parseInt(unique_literals.get(i)) - 1] == null) {
-				literals_null.add(unique_literals.get(i));
-			}
-		}
-		
-		ArrayList<ArrayList<String>> clauses_null = new ArrayList<ArrayList<String>>();
-		// remove any satisfied clauses
-		for (int i=0; i<clauses.size(); i++) {
-			if (clausetrue[i] == null) {
-				clauses_null.add(clauses.get(i));
-			}
-		}
-		
+	public static Integer rdlis(ArrayList<String> literals_null, ArrayList<ArrayList<String>> clauses_null, Random r) {	
 		String literal;
 		String current_literal;
 		HashMap<String, Integer> literal_counts = new HashMap<String, Integer>();
@@ -411,64 +377,59 @@ public class DavisPutnam {
 	}
 	
 	public static int split(ArrayList<ArrayList<String>> clauses, Boolean[] literals, Boolean[] clausetrue, ArrayList<Integer> nflips, ArrayList<String> unique_literals, Integer use_heuristic) {
-		boolean cont = true;
-		while (cont) {
-			Random r = new Random();
-			ArrayList<Integer> nulls = getnulls(clausetrue);
-			if (nulls.size() != 0) {
-				int selected_literal = 0;
-				ArrayList<Integer> literal_value;
-				int result = 0;
-
-				switch (use_heuristic) {
-					case 0: // no heuristic
-					int ind1 = r.nextInt(nulls.size());
-					ind1 = nulls.get(ind1);
-					int ind2 = r.nextInt(clauses.get(ind1).size());
-					selected_literal = Integer.parseInt(clauses.get(ind1).get(ind2));
+		// consider only non-assigned literals
+		ArrayList<String> literals_null = null_literals(unique_literals, literals);
+		
+		// consider only non-assigned variables
+		ArrayList<String> variables_null = null_variables(unique_literals, literals);
+		
+		// consider only non-satisfied clauses	
+		ArrayList<ArrayList<String>> clauses_null = null_clauses(clauses, clausetrue);
+		
+		Random r = new Random();
+		
+		if (getnulls(clausetrue).size() != 0) {
+			ArrayList<Integer> literal_value;
+			int selected_literal = 0;
+			int result = 0;
+			
+			switch (use_heuristic) {
+				case 0: // no heuristic
+					selected_literal = Integer.parseInt(literals_null.get(r.nextInt(literals_null.size())));
 					result = r.nextInt(2);
 					break;
-					case 1: // jeroslow-wang one-sided
-					selected_literal = jeroslow_wang_os(clauses, clausetrue, unique_literals, literals, r);
+				case 1: // jeroslow-wang one-sided
+					selected_literal = jeroslow_wang_os(literals_null, clauses_null, r);
 					result = r.nextInt(2);
 					break;
-					case 2: // jeroslow-wang two-sided
-					literal_value = jeroslow_wang_ts(clauses, clausetrue, unique_literals, literals, r);
+				case 2: // jeroslow-wang two-sided
+					literal_value = jeroslow_wang_ts(variables_null, clauses_null, r);
 					selected_literal = literal_value.get(0);
 					result = literal_value.get(1);
 					break;
-					case 3: // bohm's heuristic
-					selected_literal = bohm(clauses, clausetrue, unique_literals, literals, r);
+				case 3: // bohm's heuristic
+					selected_literal = bohm(literals_null, clauses_null, r);
 					result = r.nextInt(2);
 					break;
-					case 4: // rdlis
-					selected_literal = rdlis(clauses, clausetrue, unique_literals, literals, r);
+				case 4: // rdlis
+					selected_literal = rdlis(literals_null, clauses_null, r);
 					result = 1;
 					break;
+			}
+			
+			if (selected_literal != 0) {
+				if (result == 1) {
+					flipLiteral(literals, selected_literal, true, false, nflips);
+				} else {
+					flipLiteral(literals, selected_literal, false, false, nflips);
 				}
-				
-				//System.out.println(selected_literal);
-				if (literals[1000 + selected_literal - 1] == null) {
-					if (result == 1) {
-						flipLiteral(literals, selected_literal, true, false, nflips);
-						//literals[1000 + selected_literal - 1] = true;
-						//literals[1000 - selected_literal - 1] = false;
-					}
-					else {
-						flipLiteral(literals, selected_literal, true, false, nflips);
-						//literals[1000 + selected_literal - 1] = false;
-						//literals[1000 - selected_literal - 1] = true;
-					}
-					//System.out.println("Split in " + clauses.get(ind1).get(ind2));
-					cont = false;
-					return selected_literal;
-				}
+				return selected_literal;
 			} else {
-				cont = false;
 				return 0;
 			}
+		} else {
+			return 0;
 		}
-		return 0;
 	}
 	
 	public static ArrayList<Integer> getnulls(Boolean[] clausetrue) {
@@ -603,7 +564,7 @@ public class DavisPutnam {
 	    	int litchange = 0;
 	    	litchange = simplify(clauses, literals, clausetrue, nflips);  
 	    	if (litchange==0) {
-	    		splitted = split(clauses,literals, clausetrue, nflips, unique_literals, 1);
+	    		splitted = split(clauses,literals, clausetrue, nflips, unique_literals, 4);
 	    		splitd.add(splitted);
 	    		if (splitted !=0) {
 	    			//System.out.println("Split " + splitted);
