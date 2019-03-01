@@ -7,6 +7,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.LinkedHashMap;
+import java.util.Collections;
+import java.util.Comparator;
+import static java.util.stream.Collectors.*;
+import static java.util.Map.Entry.*;
+import java.util.Objects;
 
 public class DavisPutnam {
 	public static ArrayList<String> intoOneList(ArrayList<ArrayList<String>> bigList) {
@@ -348,7 +354,7 @@ public class DavisPutnam {
 		return Integer.parseInt(literal);
 	}
 
-	public static Integer dlis(ArrayList<ArrayList<String>> clauses, Boolean[] clausetrue, ArrayList<String> unique_literals, Boolean[] literals) {
+	public static Integer rdlis(ArrayList<ArrayList<String>> clauses, Boolean[] clausetrue, ArrayList<String> unique_literals, Boolean[] literals, Random r) {
 		ArrayList<String> literals_null = new ArrayList<String>();
 		// remove any non-null literals
 		for (int i=0; i<unique_literals.size(); i++) {
@@ -379,9 +385,13 @@ public class DavisPutnam {
 				}
 			}
 		}
-
+		
 		// get the key (literal) associated with the highest value (count)
-		literal = literal_counts.entrySet().stream().max((entry1, entry2) -> entry1.getValue() > entry2.getValue() ? 1 : -1).get().getKey();
+		// System.out.println(literal_counts.entrySet().stream().sorted(Collections.reverseOrder(Map.Entry.comparingByValue())).collect(toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new)));
+		// literal = literal_counts.entrySet().stream().max((entry1, entry2) -> entry1.getValue() > entry2.getValue() ? 1 : -1).get().getKey();
+		Integer max_value = literal_counts.entrySet().stream().max((entry1, entry2) -> entry1.getValue() > entry2.getValue() ? 1 : -1).get().getValue();
+		String[] keys_max_value = Arrays.stream(literal_counts.entrySet().stream().filter(entry -> Objects.equals(entry.getValue(), max_value)).map(Map.Entry::getKey).collect(toSet()).toArray()).toArray(String[]::new);
+		literal = keys_max_value[r.nextInt(keys_max_value.length)];
 
 		return Integer.parseInt(literal);
 	}
@@ -417,8 +427,8 @@ public class DavisPutnam {
 					selected_literal = bohm(clauses, clausetrue, unique_literals, literals);
 					result = r.nextInt(2);
 					break;
-					case 4: // dlis
-					selected_literal = dlis(clauses, clausetrue, unique_literals, literals);
+					case 4: // rdlis
+					selected_literal = rdlis(clauses, clausetrue, unique_literals, literals, r);
 					result = 1;
 					break;
 				}
@@ -579,7 +589,7 @@ public class DavisPutnam {
 	    	int litchange = 0;
 	    	litchange = simplify(clauses, literals, clausetrue, nflips);  
 	    	if (litchange==0) {
-	    		splitted = split(clauses,literals, clausetrue, nflips, unique_literals, 0);
+	    		splitted = split(clauses,literals, clausetrue, nflips, unique_literals, 4);
 	    		splitd.add(splitted);
 	    		if (splitted !=0) {
 	    			//System.out.println("Split " + splitted);
@@ -604,6 +614,7 @@ public class DavisPutnam {
 		    		if (falsecount > 50 + backtracksplitd.size()) {
 			    		backtracksplitd.clear();
 			    		System.out.println("Reset backtrack.");
+			    		
 			    	}
 	    			for (int j = splitd.size() - 1; j >= 0; j--) {
 	    				for (int i = 0; i < flipt.get(j).size(); i++) {
@@ -635,7 +646,7 @@ public class DavisPutnam {
 		    	}
 	    	} else {
 	    		outer: while (cont[0] == "f") {
-		    		falsecount++;
+	    			falsecount++;
 		    		if (falsecount == 1) {
 		    			splitd.add(splitted);
 		    			flipt.add(flipped);
