@@ -582,76 +582,35 @@ public class DavisPutnam {
 	    	int falsecount = 0;	
 	    	anychanges = doTrue(clauses, literals, clausetrue);
 	    	cont = checkTrue(clausetrue);
-	    		outer: while (cont[0] == "f") {
-		    		falsecount++;
-		    		if (falsecount == 1) {
-		    			splitd.add(splitted);
-		    			flipt.add(flipped);
-		    			flipped = new ArrayList<String>();
-		    		}
-		    		if (falsecount > 50 + backtracksplitd.size()) {
-			    		backtracksplitd.clear();
-			    		System.out.println("Reset backtrack.");
-			    		
-			    	}
-	    			for (int j = splitd.size() - 1; j >= 0; j--) {
-	    				for (int i = 0; i < flipt.get(j).size(); i++) {
-	    					flipLiteral(literals, flipt.get(j).get(i), false, true, nflips); // Set UNIT literals to NULL
-	    	    		}
-	    				flipLiteral(literals, splitd.get(j), false, true, nflips); //Set SPLIT literals to NULL
-	    				if (!backtracksplitd.contains(splitd.get(j))) {
-	    					doTrue(clauses, literals, clausetrue);
-	    				}
-	    				cont = checkTrue(clausetrue);
-	    				if (cont[0] != "f") {
-	    					backtracksplitd.add(splitd.get(j));
-	    					break outer; 
-	    				}
-	    			}		
+    		outer: while (cont[0] == "f") {
+	    		falsecount++;
+	    		if (falsecount == 1) {
+	    			splitd.add(splitted);
+	    			flipt.add(flipped);
+	    			flipped = new ArrayList<String>();
+	    		}
+	    		if (falsecount > 50 + backtracksplitd.size()) {
+		    		backtracksplitd.clear();
+		    		System.out.println("Reset backtrack.");
+		    		
 		    	}
-	    	} else {
-	    		outer: while (cont[0] == "f") {
-	    			falsecount++;
-		    		if (falsecount == 1) {
-		    			splitd.add(splitted);
-		    			flipt.add(flipped);
-		    			flipped = new ArrayList<String>();
-		    		}
-		    		//System.out.println(flipped);
-		    		//System.out.println("False clause: " + clauses.get(Integer.parseInt(cont[1])));
-	    			//printLiterals(literals, clauses.get(Integer.parseInt(cont[1])));
-		    		if (falsecount > 50 + backtracksplitd.size()) {
-			    		backtracksplitd.clear();
-			    		System.out.println("Reset backtrack.");
-			    	}
-	    			for (int j = splitd.size() - 1; j >= 0; j--) {
-	    				for (int i = 0; i < flipt.get(j).size(); i++) {
-	    					flipLiteral(literals, flipt.get(j).get(i), false, true, nflips); // Set UNIT literals to NULL
-	    					//literals[1000 + flipt.get(j).get(i) - 1] = null;
-	    	    			//literals[1000 - flipt.get(j).get(i) - 1] = null;
-	    	    		}
-	    				flipLiteral(literals, splitd.get(j), false, true, nflips); //Set SPLIT literals to NULL
-	    				//literals[1000 + splitd.get(j) - 1] = null;
-	    				//literals[1000 - splitd.get(j) - 1] = null;
-	    				//System.out.println(splitd.get(j));
-	    				if (!backtracksplitd.contains(splitd.get(j))) {
-	    					doTrue(clauses, literals, clausetrue);
-	    					//System.out.println("bck out!");
-	    				}
-	    				cont = checkTrue(clausetrue);
-	    				if (cont[0] != "f") {
-	    					backtracksplitd.add(splitd.get(j));
-	    					//System.out.println("out!");
-	    					break outer; 
-	    				}
-	    			}
-		    	}
+    			for (int j = splitd.size() - 1; j >= 0; j--) {
+    				for (int i = 0; i < flipt.get(j).size(); i++) {
+    					flipLiteral(literals, flipt.get(j).get(i), false, true, nflips); // Set UNIT literals to NULL
+    	    		}
+    				flipLiteral(literals, splitd.get(j), false, true, nflips); //Set SPLIT literals to NULL
+    				if (!backtracksplitd.contains(splitd.get(j))) {
+    					doTrue(clauses, literals, clausetrue);
+    				}
+    				cont = checkTrue(clausetrue);
+    				if (cont[0] != "f") {
+    					backtracksplitd.add(splitd.get(j));
+    					break outer; 
+    				}
+    			}		
 	    	}
-	    	
-	    	ncount += 1;
-	    }
-	    
-	    System.out.println(ncount);
+    	}
+
 	    int count = 0;
 	    for (Boolean value : literals.values()) {
 	    	if (value != null) {
@@ -660,11 +619,12 @@ public class DavisPutnam {
 	    		}
 	    	}
 	    }
+	    
 	    //System.out.println("SAT with " + count);
 	    if (clauses.size() > 10000) {
-	    	outputSudoku(literals,9);
+	    	outputSudoku(literals, 9);
 	    } else {
-	    	outputSudoku(literals,4);
+	    	outputSudoku(literals, 4);
 	    }
 	}
 	
@@ -694,7 +654,7 @@ public class DavisPutnam {
 	    int nsudoku = 0;
 	    FileWriter writer = null;
 		try {
-			writer = new FileWriter("/Users/azamatomu/Documents/UvA/KnowledgeRepresentation/Lab1/dpll.csv");
+			writer = new FileWriter("./dpll.csv");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
