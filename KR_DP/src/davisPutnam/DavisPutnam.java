@@ -145,51 +145,109 @@ public class DavisPutnam {
 		}
 		return literals;
 	}
-	public static ArrayList<Integer> jeroslaw_wang(ArrayList<ArrayList<String>> clauses, ArrayList<String> unique_literals, Boolean[] literals, Boolean two_sided) {
-		ArrayList<Integer> literal_value = new ArrayList<Integer>();
+	
+	public static Integer jeroslow_wang_os(ArrayList<ArrayList<String>> clauses, Boolean[] clausetrue, ArrayList<String> unique_literals, Boolean[] literals) {
+		ArrayList<String> literals_null = new ArrayList<String>();
+		// remove any non-null literals
+		for (int i=0; i<unique_literals.size(); i++) {
+			if (literals[1000 + Integer.parseInt(unique_literals.get(i)) - 1] == null) {
+				literals_null.add(unique_literals.get(i));
+			}
+		}
+		
+		ArrayList<ArrayList<String>> clauses_null = new ArrayList<ArrayList<String>>();
+		// remove any satisfied clauses
+		for (int i=0; i<clauses.size(); i++) {
+			if (clausetrue[i] == null) {
+				clauses_null.add(clauses.get(i));
+			}
+		}
+		
 		String literal = "";
+		double jw_score = 0.0;
+		
 		String current_literal;
-		String flipped_literal;
+		double current_jw_score;
+		
+		for (int i=0; i<literals_null.size(); i++) { // loop over the literals
+			current_literal = literals_null.get(i);
+			current_jw_score = 0.0;
+
+			for (int j=0; j<clauses_null.size(); j++) { // loop over the clauses
+				if (clauses_null.get(j).contains(current_literal)) { // if clause contains literal
+					current_jw_score += Math.pow(2, -clauses_null.get(j).size());
+				}
+			}
+			
+			if (current_jw_score > jw_score) { // if the jeroslaw-wang os score is higher; update
+				jw_score = current_jw_score;
+				literal = current_literal;
+			}
+		}
+		
+	 return Integer.parseInt(literal);
+	}
+	
+	public static ArrayList<Integer> jeroslow_wang_ts(ArrayList<ArrayList<String>> clauses, Boolean[] clausetrue, ArrayList<String> unique_literals, Boolean[] literals) {
+		ArrayList<String> literals_null = new ArrayList<String>();
+		// remove any non-null literals
+		for (int i=0; i<unique_literals.size(); i++) {
+			if (literals[1000 + Integer.parseInt(unique_literals.get(i)) - 1] == null) {
+				literals_null.add(unique_literals.get(i));
+			}
+		}
+		
+		ArrayList<ArrayList<String>> clauses_null = new ArrayList<ArrayList<String>>();
+		// remove any satisfied clauses
+		for (int i=0; i<clauses.size(); i++) {
+			if (clausetrue[i] == null) {
+				clauses_null.add(clauses.get(i));
+			}
+		}
+		
+		ArrayList<Integer> literal_value = new ArrayList<Integer>();
+		
+		String literal = "";
 		double jw_score = 0.0;
 		double flipped_jw_score = 0.0;
+		
+		String current_literal;
+		String flipped_literal;
 		double current_jw_score;
 		double current_flipped_jw_score;
 		
-		for (int i=0; i<unique_literals.size(); i++) { // loop over the literals
-			current_literal = unique_literals.get(i);
+		for (int i=0; i<literals_null.size(); i++) { // loop over the literals
+			current_literal = literals_null.get(i);
+			flipped_literal = flip_literal(current_literal);
+			
 			current_jw_score = 0.0;
 			current_flipped_jw_score = 0.0;
 
-			for (int j=0; j<clauses.size(); j++) { // loop over all clauses
-				if (clauses.get(j).contains(current_literal)) { // if clause contains literal
-					current_jw_score += Math.pow(2, -clauses.get(j).size());
+			for (int j=0; j<clauses_null.size(); j++) { // loop over the clauses
+				if (clauses_null.get(j).contains(current_literal)) { // if clause contains literal
+					current_jw_score += Math.pow(2, -clauses_null.get(j).size());
 				}
-
-				if (two_sided) { // if 2-sided jeroslaw-wang
-					flipped_literal = flip_literal(current_literal);
-					if (clauses.get(j).contains(flipped_literal)) { // if clause contains literal
-						current_flipped_jw_score += Math.pow(2, -clauses.get(j).size());
-					}
+				
+				if (clauses_null.get(j).contains(flipped_literal)) { // if clause contains flipped literal
+					current_flipped_jw_score += Math.pow(2, -clauses_null.get(j).size());
 				}
 			}
-			if (current_jw_score + current_flipped_jw_score > jw_score + flipped_jw_score) { // if the jeroslaw-wang score is higher; update
-				if (literals[1000 + Integer.parseInt(current_literal) - 1] == null) { // if the literal is not assigned yet
-					jw_score = current_jw_score;
-					flipped_jw_score = current_flipped_jw_score;
-					literal = current_literal;
-				}
+			
+			if (current_jw_score + current_flipped_jw_score > jw_score + flipped_jw_score) { // if the jeroslaw-wang ts score is higher; update
+				jw_score = current_jw_score;
+				flipped_jw_score = current_flipped_jw_score;
+				literal = current_literal;
 			}
 		}
 		
 		literal_value.add(Integer.parseInt(literal));
-
-		if (two_sided) {
-			if (jw_score >= flipped_jw_score) {
-				literal_value.add(1);
-			} else {
-				literal_value.add(0);
-			}
+		
+		if (jw_score >= flipped_jw_score) { // if J(x) >= J(x')
+			literal_value.add(1);
+		} else {
+			literal_value.add(0);
 		}
+		
 		return literal_value;
 	}
 
@@ -203,8 +261,27 @@ public class DavisPutnam {
 		return flipped_literal;
 	}
 
-	public static Integer bohm(ArrayList<ArrayList<String>> clauses, ArrayList<String> unique_literals, Boolean[] literals) {
+	public static Integer bohm(ArrayList<ArrayList<String>> clauses, Boolean[] clausetrue, ArrayList<String> unique_literals, Boolean[] literals) {
+		ArrayList<String> literals_null = new ArrayList<String>();
+		// remove any non-null literals
+		for (int i=0; i<unique_literals.size(); i++) {
+			if (literals[1000 + Integer.parseInt(unique_literals.get(i)) - 1] == null) {
+				literals_null.add(unique_literals.get(i));
+			}
+		}
+		
+		ArrayList<ArrayList<String>> clauses_null = new ArrayList<ArrayList<String>>();
+		// remove any satisfied clauses
+		for (int i=0; i<clauses.size(); i++) {
+			if (clausetrue[i] == null) {
+				clauses_null.add(clauses.get(i));
+			}
+		}
+		
 		String literal = "";
+		String current_literal;
+		String flipped_literal;
+		
 		double bohm_score = 0.0;
 		
 		int alpha = 1;
@@ -214,21 +291,21 @@ public class DavisPutnam {
 		ArrayList<Integer> clause_lengths = new ArrayList<Integer>();
 
 		// create the clause_literal_dict
-		for (int i=0; i<clauses.size(); i++) { // loop over all clauses
-			for (int j=0; j<clauses.get(i).size(); j++) { // loop over the literals
-				if (clause_literal_dict.containsKeys(clauses.get(i).size(), clauses.get(i).get(j))) { // clause-literal combination already exists
-					clause_literal_dict.put(clauses.get(i).size(), clauses.get(i).get(j), clause_literal_dict.get(clauses.get(i).size(), clauses.get(i).get(j)) + 1);
+		for (int i=0; i<clauses_null.size(); i++) { // loop over all clauses
+			for (int j=0; j<clauses_null.get(i).size(); j++) { // loop over the literals
+				if (clause_literal_dict.containsKeys(clauses_null.get(i).size(), clauses_null.get(i).get(j))) { // clause-literal combination already exists
+					clause_literal_dict.put(clauses_null.get(i).size(), clauses_null.get(i).get(j), clause_literal_dict.get(clauses_null.get(i).size(), clauses_null.get(i).get(j)) + 1);
 				} else { // clause-literal combination does not exist yet
-					clause_literal_dict.put(clauses.get(i).size(), clauses.get(i).get(j), 1);
-					clause_lengths.add(clauses.get(i).size());
+					clause_literal_dict.put(clauses_null.get(i).size(), clauses_null.get(i).get(j), 1);
+					clause_lengths.add(clauses_null.get(i).size());
 				}
 			}
 		}
 
 		// calculate the bohm score for all literals
-		for (int i=0; i<unique_literals.size(); i++) { // loop over all literals
-			String current_literal = unique_literals.get(i);
-			String flipped_literal = flip_literal(current_literal);
+		for (int i=0; i<literals_null.size(); i++) { // loop over all literals
+			current_literal = literals_null.get(i);
+			flipped_literal = flip_literal(current_literal);
 			
 			ArrayList<Double> vector = new ArrayList<Double>();
 
@@ -257,30 +334,44 @@ public class DavisPutnam {
 
 			// get the magnitude of the bohm vector
 			double current_bohm_score = 0.0;
-			
 			for (int k=0; k<vector.size(); k++) {
 				current_bohm_score += vector.get(k) * vector.get(k);
 			}
+			current_bohm_score = Math.sqrt(current_bohm_score);
 
 			if (current_bohm_score > bohm_score) { // if the bohm score is higher; update
-				if (literals[1000 + Integer.parseInt(current_literal) - 1] == null) { // if the literal is not assigned yet
-					bohm_score = current_bohm_score;
-					literal = current_literal;
-				}
+				bohm_score = current_bohm_score;
+				literal = current_literal;
 			}
 		}
 
 		return Integer.parseInt(literal);
 	}
 
-	public static Integer dlis(ArrayList<ArrayList<String>> clauses, ArrayList<String> unique_literals, Boolean[] literals) {
+	public static Integer dlis(ArrayList<ArrayList<String>> clauses, Boolean[] clausetrue, ArrayList<String> unique_literals, Boolean[] literals) {
+		ArrayList<String> literals_null = new ArrayList<String>();
+		// remove any non-null literals
+		for (int i=0; i<unique_literals.size(); i++) {
+			if (literals[1000 + Integer.parseInt(unique_literals.get(i)) - 1] == null) {
+				literals_null.add(unique_literals.get(i));
+			}
+		}
+		
+		ArrayList<ArrayList<String>> clauses_null = new ArrayList<ArrayList<String>>();
+		// remove any satisfied clauses
+		for (int i=0; i<clauses.size(); i++) {
+			if (clausetrue[i] == null) {
+				clauses_null.add(clauses.get(i));
+			}
+		}
+		
 		String literal;
 		String current_literal;
 		HashMap<String, Integer> literal_counts = new HashMap<String, Integer>();
 
-		for (int i=0; i<clauses.size(); i++) {
-			for (int j=0; j<clauses.get(i).size(); j++) {
-				current_literal = clauses.get(i).get(j);
+		for (int i=0; i<clauses_null.size(); i++) {
+			for (int j=0; j<clauses_null.get(i).size(); j++) {
+				current_literal = clauses_null.get(i).get(j);
 				if (literal_counts.containsKey(current_literal)) {
 					literal_counts.put(current_literal, literal_counts.get(current_literal) + 1);
 				} else {
@@ -292,10 +383,6 @@ public class DavisPutnam {
 		// get the key (literal) associated with the highest value (count)
 		literal = literal_counts.entrySet().stream().max((entry1, entry2) -> entry1.getValue() > entry2.getValue() ? 1 : -1).get().getKey();
 
-		while (literals[1000 + Integer.parseInt(literal) - 1] != null) { // make sure the selected literal hasn't been assigned yet
-			literal_counts.remove(literal);
-			literal = literal_counts.entrySet().stream().max((entry1, entry2) -> entry1.getValue() > entry2.getValue() ? 1 : -1).get().getKey();
-		}
 		return Integer.parseInt(literal);
 	}
 	
@@ -317,24 +404,22 @@ public class DavisPutnam {
 					selected_literal = Integer.parseInt(clauses.get(ind1).get(ind2));
 					result = r.nextInt(2);
 					break;
-					case 1: // jeroslaw-wang one-sided
-					literal_value = jeroslaw_wang(clauses, unique_literals, literals, false);
-					selected_literal = literal_value.get(0);
+					case 1: // jeroslow-wang one-sided
+					selected_literal = jeroslow_wang_os(clauses, clausetrue, unique_literals, literals);
 					result = r.nextInt(2);
 					break;
-					case 2: // jeroslaw-wang two-sided
-					literal_value = jeroslaw_wang(clauses, unique_literals, literals, true);
+					case 2: // jeroslow-wang two-sided
+					literal_value = jeroslow_wang_ts(clauses, clausetrue, unique_literals, literals);
 					selected_literal = literal_value.get(0);
 					result = literal_value.get(1);
 					break;
-					// return = 0 if selected literal occurs in more negative clauses
 					case 3: // bohm's heuristic
-					selected_literal = bohm(clauses, unique_literals, literals);
+					selected_literal = bohm(clauses, clausetrue, unique_literals, literals);
 					result = r.nextInt(2);
 					break;
 					case 4: // dlis
-					selected_literal = dlis(clauses, unique_literals, literals);
-					result = r.nextInt(2);
+					selected_literal = dlis(clauses, clausetrue, unique_literals, literals);
+					result = 1;
 					break;
 				}
 				
