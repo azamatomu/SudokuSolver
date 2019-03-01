@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 import java.util.LinkedHashMap;
 import java.util.Collections;
 import java.util.Comparator;
@@ -484,16 +485,17 @@ public class DavisPutnam {
 		}
 		System.out.println(countC + " true clauses with " + countL + " true literals, and " + countF + " false clauses.");
 	}
-	public static void outputSudoku(HashMap<String, Boolean> literals) {
+
+	public static void outputSudoku(HashMap<String, Boolean> literals, int divisor) {
 		int count = 0;
-		for (int i=1; i<=9; i++) {
-			for (int j=1; j<=9; j++) {
-				for (int k=1; k<=9; k++) {
+		for (int i=1; i<=divisor; i++) {
+			for (int j=1; j<=divisor; j++) {
+				for (int k=1; k<=divisor; k++) {
 					String key = String.valueOf(i) + String.valueOf(j) + String.valueOf(k);
 					if (literals.get(key) == true) {
 						System.out.print(String.valueOf(k) + " ");
 						count++;
-						if (count % 9 == 0) {
+						if (count % divisor == 0) {
 							System.out.println();
 						}
 					}
@@ -564,6 +566,7 @@ public class DavisPutnam {
 	    while (cont[0] != "t") {
 	    	String litchange = "";
 	    	litchange = simplify(clauses, literals, clausetrue, nflips);  
+	    	
 	    	if (litchange == "") {
 	    		splitted = split(clauses, literals, clausetrue, nflips, unique_literals, 1);
 	    		splitd.add(splitted);
@@ -579,7 +582,6 @@ public class DavisPutnam {
 	    	int falsecount = 0;	
 	    	anychanges = doTrue(clauses, literals, clausetrue);
 	    	cont = checkTrue(clausetrue);
-	    	if (cdcl == true) {
 	    		outer: while (cont[0] == "f") {
 		    		falsecount++;
 		    		if (falsecount == 1) {
@@ -605,20 +607,7 @@ public class DavisPutnam {
 	    					backtracksplitd.add(splitd.get(j));
 	    					break outer; 
 	    				}
-	    			}
-	    			/*
-	    			 INSPECT THE FALSE CLAUSE
-	    			 LOOK AT THE LITERALS
-	    			 FIND THE ONE THAT WAS SPLITTED AT HIGHEST LEVEL 
-	    			 MAKE ALL SPLITTED VALUES AFTER THAT AND ALL UNIT VALUES AFTER THAT NULL
-	    			 ADJUST SPLITTED AND FLIPPED ARRAYS
-	    			 ADD NEW CLAUSE
-	    			
-	    			 */
-	    			
-	    			
-	    			
-	    			
+	    			}		
 		    	}
 	    	} else {
 	    		outer: while (cont[0] == "f") {
@@ -658,11 +647,10 @@ public class DavisPutnam {
 	    			}
 		    	}
 	    	}
-	    	if (ncount % 100  == 0) {
-	    		//System.out.println(ncount);
-	    	}
+	    	
 	    	ncount += 1;
 	    }
+	    
 	    System.out.println(ncount);
 	    int count = 0;
 	    for (Boolean value : literals.values()) {
@@ -673,8 +661,13 @@ public class DavisPutnam {
 	    	}
 	    }
 	    //System.out.println("SAT with " + count);
-	    outputSudoku(literals);
+	    if (clauses.size() > 10000) {
+	    	outputSudoku(literals,9);
+	    } else {
+	    	outputSudoku(literals,4);
+	    }
 	}
+	
 	// 1. Simplify
 	// Tautology (only checked once)
 	// If clause has 'P or P then it can be removed
@@ -693,13 +686,22 @@ public class DavisPutnam {
 	// For literal from 2 pick another value, try again
 	
 	public static void main(String[] args) throws FileNotFoundException {
-		// TODO Auto-generated method stub
 		// pass the path to the file as a parameter 
 		File file2 = new File("newsudoku.txt"); // always open
-		//File file2 = new File("four_example.txt"); // always open
+		//File file2 = new File("newfoursudoku.txt"); // always open
 	    Scanner sc2 = new Scanner(file2);
 	    boolean moreproblems = true;
 	    int nsudoku = 0;
+	    FileWriter writer = null;
+		try {
+			writer = new FileWriter("/Users/azamatomu/Documents/UvA/KnowledgeRepresentation/Lab1/dpll.csv");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	ArrayList<String> flipsTotal = new ArrayList<>();
+    	
+    	
 	    while (moreproblems) {
 		    //Reading the sudoku rules file (Scanner 1) and sudoku problem file (Scanner 2) 
 			File file = new File("sudoku-rules.txt"); 
@@ -715,13 +717,10 @@ public class DavisPutnam {
 		    	throw new FileNotFoundException();
 		    }
 		    ArrayList<ArrayList<String>> clauses = new ArrayList<ArrayList<String>>(); //List containing all the clauses with the literals
-		    if (maxvar < 900) maxvar = 999;
-		    
 		    HashMap<String, Boolean> literals = new HashMap<String, Boolean>();
-//		    Boolean[] literals = new Boolean[2*maxvar + 1];  //List containing boolean values of literals
-//		    Arrays.fill(literals, null);
-//		    System.out.println(literals.length);
+
 		    readSudoku(sc, sc2, clauses, literals, nextclause, after);
+
 		    if (!sc2.hasNextLine()) {
 		    	moreproblems = false;
 		    }
@@ -729,12 +728,20 @@ public class DavisPutnam {
 		    //List containing boolean values of clauses
 		    Boolean[] clausetrue= new Boolean[clauses.size()]; 
 		    Arrays.fill(clausetrue, null);
-		    //System.out.println("There are " + clauses.size() + " clauses.");
 		    nsudoku++;
 		    ArrayList<Integer> nflips = new ArrayList<Integer>();
 		    solveSudoku(clauses, literals, clausetrue, nflips);
 		    System.out.println(nflips.get(nflips.size()-1));
+		    flipsTotal.add(String.valueOf(nflips.get(nflips.size()-1)));
 	    }
+	    String collect = flipsTotal.stream().collect(Collectors.joining(","));
+    	try {
+			writer.write(collect);
+			writer.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	    System.out.println("You have " + nsudoku + " sudokus.");
 	}
 }
