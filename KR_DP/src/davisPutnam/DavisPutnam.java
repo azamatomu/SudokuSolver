@@ -392,15 +392,15 @@ public class DavisPutnam {
 			int result = 0;
 			
 			switch (version) {
-				case "S1": // no heuristic
+				case "-S1": // no heuristic
 					selected_literal = literals_null.get(r.nextInt(literals_null.size()));
 					result = r.nextInt(2);
 					break;
-				case "S2": // jeroslow-wang one-sided
+				case "-S2": // jeroslow-wang one-sided
 					selected_literal = jeroslow_wang_os(literals_null, clauses_null, r);
 					result = r.nextInt(2);
 					break;
-				case "S3": // jeroslow-wang two-sided
+				case "-S3": // jeroslow-wang two-sided
 					literal_value = jeroslow_wang_ts(variables_null, clauses_null, r);
 					selected_literal = literal_value.get(0);
 					if (literal_value.get(1) == "1") {
@@ -409,11 +409,11 @@ public class DavisPutnam {
 						result = 0;
 					}
 					break;
-				case "S4": // bohm's heuristic
+				case "-S4": // bohm's heuristic
 					selected_literal = bohm(literals_null, clauses_null, r);
 					result = r.nextInt(2);
 					break;
-				case "S5": // rdlis
+				case "-S5": // rdlis
 					selected_literal = rdlis(literals_null, clauses_null, r);
 					result = 1;
 					break;
@@ -674,6 +674,34 @@ public class DavisPutnam {
 	    
 	    System.out.println("Solution to Sudoku:");
 	    solveSudoku(clauses, literals, clausetrue, nflips, version);
+	    
+	    // get the number of true literals
+	    int literal_true_count = 0;
+	    for (Boolean value : literals.values()) {
+            if (value == true) {
+            	literal_true_count++;
+            }
+        }
+	    
+	    Writer writer = null;
+
+	    try {
+	        writer = new FileWriter(filepath + ".out");
+	        writer.write("p cnf " + String.valueOf(literal_true_count) + " " + String.valueOf(literal_true_count) + "\n");
+	        for (String key : literals.keySet()) {
+	            if (literals.get(key) == true) {
+	            	writer.write(key + " 0\n");
+	            }
+	        }
+	    } catch (IOException e) {
+	    	e.printStackTrace();
+	    } finally {
+	       try {
+	    	   writer.close();
+	       } catch (Exception e) {
+	    	   e.printStackTrace();
+    	   }
+	    }
 	    
 	    System.out.println("Number of flips: " + String.valueOf(nflips.get(nflips.size()-1)));	    
 	    System.out.println("Solved sudoku in " + String.valueOf((System.currentTimeMillis() - startTime)/1000) + " seconds");
