@@ -1,3 +1,4 @@
+package davisPutnam;
 public class Literal {
 
     private String literal;

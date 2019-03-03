@@ -541,13 +541,10 @@ public class DavisPutnam {
 	}
 
 	public static void solveSudoku(ArrayList<ArrayList<String>> clauses, HashMap<String, Boolean> literals, Boolean[] clausetrue, ArrayList<Integer> nflips, String version, CNF cnf, String filepath) throws IOException {
-		if (version.equals("S6"))	{
+		if (version.equals("-S6"))	{
 			GSAT gsat = new GSAT(cnf,filepath);
 			gsat.GSATSolve();
-		}
-
-		else {
-
+		} else {
 			nflips.add(0);
 			String[] cont = new String[2];
 			cont[0] = "n";
@@ -619,11 +616,11 @@ public class DavisPutnam {
 			}
 
 			//System.out.println("SAT with " + count);
-			if (clauses.size() > 10000) {
-				outputSudoku(literals, 9);
-			} else {
-				outputSudoku(literals, 4);
-			}
+			//if (clauses.size() > 10000) {
+			//	outputSudoku(literals, 9);
+			//} else {
+			//	outputSudoku(literals, 4);
+			//}
 		}
 	}
 
@@ -681,8 +678,9 @@ public class DavisPutnam {
 		ArrayList<ArrayList<String>> clauses = new ArrayList<ArrayList<String>>(); //List containing all the clauses with the literals
 		HashMap<String, Boolean> literals = new HashMap<String, Boolean>();
 		readSudoku(sc, clauses, literals, nextclause, after);
+		
 		CNF cnf = new CNF();
-		if (version.equals("S6"))	{
+		if (version.equals("-S6"))	{
 			for (ArrayList<String> clause : clauses)	{
 				Clause c = new Clause();
 				int clause_length = clause.size();
@@ -702,18 +700,17 @@ public class DavisPutnam {
 				}
 				cnf.addClause(c);
 			}
+			
 			readSudoku(sc, clauses, literals, nextclause, after);
 			sc.close();
 			Boolean[] clausetrue= new Boolean[clauses.size()];
 			Arrays.fill(clausetrue, null);
 			ArrayList<Integer> nflips = new ArrayList<Integer>();
 			//List containing boolean values of clauses
+			System.out.println("Solving sudoku (or other SAT problem)...");
 			solveSudoku(clauses, literals, clausetrue, nflips, version, cnf, filepath);
 			System.out.println("(Partially) Solved CNF in " + String.valueOf((System.currentTimeMillis() - startTime)/1000) + " seconds");
-
-		}
-		else {
-
+		} else {
 			sc.close();
 
 			//List containing boolean values of clauses
@@ -721,7 +718,7 @@ public class DavisPutnam {
 			Arrays.fill(clausetrue, null);
 			ArrayList<Integer> nflips = new ArrayList<Integer>();
 
-			System.out.println("Solution to Sudoku:");
+			System.out.println("Solving sudoku (or other SAT problem)...");
 			solveSudoku(clauses, literals, clausetrue, nflips, version,cnf,filepath);
 
 			// get the number of true literals
