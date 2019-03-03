@@ -509,14 +509,17 @@ public class DavisPutnam {
 		while (sat.hasNextLine()) {
 	    	int j = 0;
 	    	nextclause = sat.nextLine();
-	    	ArrayList<String> singleList = new ArrayList<String>();
 	    	after = nextclause.split("\\s+");
-	    	while (!after[j].equals("0")) {
-	    		literals.put(after[j], null);
-	    		singleList.add(after[j]);
-	    		j++;
-	    	}
-	    	clauses.add(singleList);
+		    if (!(after[0].charAt(0) == 'c')) {
+		    	ArrayList<String> singleList = new ArrayList<String>();
+		    	after = nextclause.split("\\s+");
+		    	while (!after[j].equals("0")) {
+		    		literals.put(after[j], null);
+		    		singleList.add(after[j]);
+		    		j++;
+		    	}
+		    	clauses.add(singleList);
+		    }
 	    }
 	}
 	
