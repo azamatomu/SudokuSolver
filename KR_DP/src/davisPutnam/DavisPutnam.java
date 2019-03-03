@@ -374,7 +374,7 @@ public class DavisPutnam {
 		return literal;
 	}
 	
-	public static String split(ArrayList<ArrayList<String>> clauses, HashMap<String, Boolean> literals, Boolean[] clausetrue, ArrayList<Integer> nflips, ArrayList<String> unique_literals, Integer use_heuristic) {
+	public static String split(ArrayList<ArrayList<String>> clauses, HashMap<String, Boolean> literals, Boolean[] clausetrue, ArrayList<Integer> nflips, ArrayList<String> unique_literals, String version) {
 		// consider only non-assigned literals
 		ArrayList<String> literals_null = null_literals(unique_literals, literals);
 		
@@ -391,16 +391,16 @@ public class DavisPutnam {
 			String selected_literal = "";
 			int result = 0;
 			
-			switch (use_heuristic) {
-				case 0: // no heuristic
+			switch (version) {
+				case "S1": // no heuristic
 					selected_literal = literals_null.get(r.nextInt(literals_null.size()));
 					result = r.nextInt(2);
 					break;
-				case 1: // jeroslow-wang one-sided
+				case "S2": // jeroslow-wang one-sided
 					selected_literal = jeroslow_wang_os(literals_null, clauses_null, r);
 					result = r.nextInt(2);
 					break;
-				case 2: // jeroslow-wang two-sided
+				case "S3": // jeroslow-wang two-sided
 					literal_value = jeroslow_wang_ts(variables_null, clauses_null, r);
 					selected_literal = literal_value.get(0);
 					if (literal_value.get(1) == "1") {
@@ -409,11 +409,11 @@ public class DavisPutnam {
 						result = 0;
 					}
 					break;
-				case 3: // bohm's heuristic
+				case "S4": // bohm's heuristic
 					selected_literal = bohm(literals_null, clauses_null, r);
 					result = r.nextInt(2);
 					break;
-				case 4: // rdlis
+				case "S5": // rdlis
 					selected_literal = rdlis(literals_null, clauses_null, r);
 					result = 1;
 					break;
@@ -501,13 +501,14 @@ public class DavisPutnam {
 					}
 				}
 			}
-		}	
+		}
+		System.out.println();
 	}
 	
-	public static void readSudoku(Scanner rules, Scanner problem, ArrayList<ArrayList<String>> clauses, HashMap<String, Boolean> literals, String nextclause, String[] after) {
-		while (rules.hasNextLine()) {
+	public static void readSudoku(Scanner sat, ArrayList<ArrayList<String>> clauses, HashMap<String, Boolean> literals, String nextclause, String[] after) {
+		while (sat.hasNextLine()) {
 	    	int j = 0;
-	    	nextclause = rules.nextLine();
+	    	nextclause = sat.nextLine();
 	    	ArrayList<String> singleList = new ArrayList<String>();
 	    	after = nextclause.split("\\s+");
 	    	while (!after[j].equals("0")) {
@@ -517,21 +518,6 @@ public class DavisPutnam {
 	    	}
 	    	clauses.add(singleList);
 	    }
-	    outer: while (problem.hasNextLine()) {
-	    	int j = 0;
-	    	nextclause = problem.nextLine();
-	    	if (nextclause.charAt(0)=='=') {
-	    		break outer;
-	    	}
-	    	ArrayList<String> singleList = new ArrayList<String>();
-	    	after = nextclause.split("\\s+");
-	    	while (!after[j].equals("0")) {
-	    		literals.put(after[j], null);
-	    		singleList.add(after[j]);
-	    		j++;
-	    	}
-	    	clauses.add(singleList);
-	    }  
 	}
 	
 	public static void flipLiteral(HashMap<String, Boolean> literals, String tochange, Boolean firsttrue, Boolean nullify, ArrayList<Integer> nflips) {
@@ -550,7 +536,7 @@ public class DavisPutnam {
 		}	
 	}
 	
-	public static void solveSudoku(ArrayList<ArrayList<String>> clauses, HashMap<String, Boolean> literals, Boolean[] clausetrue, ArrayList<Integer> nflips) {
+	public static void solveSudoku(ArrayList<ArrayList<String>> clauses, HashMap<String, Boolean> literals, Boolean[] clausetrue, ArrayList<Integer> nflips, String version) {
 		nflips.add(0);
 		String[] cont = new String[2];
 		cont[0] = "n";
@@ -568,7 +554,7 @@ public class DavisPutnam {
 	    	litchange = simplify(clauses, literals, clausetrue, nflips);  
 	    	
 	    	if (litchange == "") {
-	    		splitted = split(clauses, literals, clausetrue, nflips, unique_literals, 1);
+	    		splitted = split(clauses, literals, clausetrue, nflips, unique_literals, version);
 	    		splitd.add(splitted);
 	    		if (splitted != "") {
 	    			//System.out.println("Split " + splitted);
@@ -646,62 +632,50 @@ public class DavisPutnam {
 	// For literal from 2 pick another value, try again
 	
 	public static void main(String[] args) throws FileNotFoundException {
-		// pass the path to the file as a parameter 
-		File file2 = new File("newsudoku.txt"); // always open
-		//File file2 = new File("newfoursudoku.txt"); // always open
-	    Scanner sc2 = new Scanner(file2);
-	    boolean moreproblems = true;
-	    int nsudoku = 0;
-	    FileWriter writer = null;
-		try {
-			writer = new FileWriter("./dpll.csv");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	ArrayList<String> flipsTotal = new ArrayList<>();
-    	
-    	
-	    while (moreproblems) {
-		    //Reading the sudoku rules file (Scanner 1) and sudoku problem file (Scanner 2) 
-			File file = new File("sudoku-rules.txt"); 
-			//File file = new File("four_rules.txt"); 
-		    Scanner sc = new Scanner(file);  //open once
-		    String nextclause = sc.nextLine();
-		    String[] after = nextclause.split("\\s+");
-		    int maxvar;
-		    if (after[0].charAt(0) == 'p') {
-	    		maxvar = Integer.parseInt(after[2]);
-	    	} else {
-		    	System.out.println("No starting line found.");
-		    	throw new FileNotFoundException();
-		    }
-		    ArrayList<ArrayList<String>> clauses = new ArrayList<ArrayList<String>>(); //List containing all the clauses with the literals
-		    HashMap<String, Boolean> literals = new HashMap<String, Boolean>();
+		String version = "";
+		String filepath = "";
 
-		    readSudoku(sc, sc2, clauses, literals, nextclause, after);
-
-		    if (!sc2.hasNextLine()) {
-		    	moreproblems = false;
-		    }
-		    sc.close();
-		    //List containing boolean values of clauses
-		    Boolean[] clausetrue= new Boolean[clauses.size()]; 
-		    Arrays.fill(clausetrue, null);
-		    nsudoku++;
-		    ArrayList<Integer> nflips = new ArrayList<Integer>();
-		    solveSudoku(clauses, literals, clausetrue, nflips);
-		    System.out.println(nflips.get(nflips.size()-1));
-		    flipsTotal.add(String.valueOf(nflips.get(nflips.size()-1)));
-	    }
-	    String collect = flipsTotal.stream().collect(Collectors.joining(","));
-    	try {
-			writer.write(collect);
-			writer.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if (args.length == 2) {
+			// read command line arguments
+			version = args[0];
+			filepath = args[1];
+		} else {
+			System.err.println("This script requires exactly 2 arguments, as specified in the assignment.");
+	        System.exit(1);
 		}
-	    System.out.println("You have " + nsudoku + " sudokus.");
+		
+		//Reading the SAT file (Scanner)
+		File file = new File(filepath); 
+	    Scanner sc = new Scanner(file);  //open once
+
+    	// Start the timer
+    	long startTime = System.currentTimeMillis();
+	    
+    	//Reading the SAT file (Scanner)
+	    String nextclause = sc.nextLine();
+	    String[] after = nextclause.split("\\s+");
+	    
+	    if (!(after[0].charAt(0) == 'p')) {
+	    	sc.close();
+	    	System.out.println("No starting line found.");
+	    	throw new FileNotFoundException();
+    	} 
+	    
+	    ArrayList<ArrayList<String>> clauses = new ArrayList<ArrayList<String>>(); //List containing all the clauses with the literals
+	    HashMap<String, Boolean> literals = new HashMap<String, Boolean>();
+
+	    readSudoku(sc, clauses, literals, nextclause, after);
+	    sc.close();
+
+	    //List containing boolean values of clauses
+	    Boolean[] clausetrue= new Boolean[clauses.size()]; 
+	    Arrays.fill(clausetrue, null);
+	    ArrayList<Integer> nflips = new ArrayList<Integer>();
+	    
+	    System.out.println("Solution to Sudoku:");
+	    solveSudoku(clauses, literals, clausetrue, nflips, version);
+	    
+	    System.out.println("Number of flips: " + String.valueOf(nflips.get(nflips.size()-1)));	    
+	    System.out.println("Solved sudoku in " + String.valueOf((System.currentTimeMillis() - startTime)/1000) + " seconds");
 	}
 }

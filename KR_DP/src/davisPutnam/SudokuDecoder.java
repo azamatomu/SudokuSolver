@@ -13,10 +13,10 @@ public class SudokuDecoder {
 
 	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
-		File file = new File("damnhard.sdk.txt");
+		File file = new File("1000_sudokus.txt");
 		//File file = new File("damnhard.sdk.txt");
 		Scanner sc = new Scanner(file);
-		FileWriter fileWriter = new FileWriter("newsudoku.txt");
+		FileWriter fileWriter = new FileWriter("./1000_sudokus_dimacs.txt");
 		PrintWriter printWriter = new PrintWriter(fileWriter);
 		
 		int row = 1; 
